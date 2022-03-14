@@ -17,6 +17,9 @@ MemoryBlock wcFiles(int startIdx, int endIdx, char *argv[]) {
     strcpy(command, "wc");
     for (i = 0; i < endIdx - startIdx + 1; i++) {
         strcat(command, " ");
+        if (access(argv[startIdx + i], F_OK) != 0) {
+            raiseError("Can't find the file specified with wc_files.");
+        }
         strcat(command, argv[startIdx + i]);
     }
     strcat(command, " > tmp.txt");
@@ -29,6 +32,7 @@ MemoryBlock wcFiles(int startIdx, int endIdx, char *argv[]) {
 
     fseek(tmpFile, 0, SEEK_END);
     long fileSize = ftell(tmpFile);
+    fseek(tmpFile, 0, SEEK_SET);
 
     char c;
     i = 0;
@@ -37,6 +41,7 @@ MemoryBlock wcFiles(int startIdx, int endIdx, char *argv[]) {
 
     memoryBlock.wcResult[i] = '\0';
     fclose(tmpFile);
+    system("rm tmp.txt");
 
     return memoryBlock;
 }

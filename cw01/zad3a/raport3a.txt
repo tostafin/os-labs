@@ -1,0 +1,633 @@
+*****BIBLIOTEKA STATYCZNA*****
+***TEST 1***
+1 maly plik, liczony 10 razy, za kazdym razem o jeden plik wiecej na raz, tablica o rozmiarze 50, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000005s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004207s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004761s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004117s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004698s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004374s
+User time:    0.000000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.004933s
+User time:    0.010000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 1***
+
+***TEST 2***
+1 maly plik, 1 sredni, 1 duzy, liczone za kazdym razem o jeden wiecej, tablica o rozmiarze 5000, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000030s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.048811s
+User time:    0.040000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.045216s
+User time:    0.040000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.043300s
+User time:    0.040000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.043353s
+User time:    0.040000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.044843s
+User time:    0.040000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.044796s
+User time:    0.040000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 2***
+
+***TEST 3***
+5 malych plikow, 3 srednie, 2 duze, liczone za kazdym razem o jeden raz wiecej, tablica o rozmiarze 50000, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000161s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.089561s
+User time:    0.080000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.093221s
+User time:    0.080000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.090886s
+User time:    0.080000s
+System time:  0.010000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.090026s
+User time:    0.090000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.090427s
+User time:    0.080000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.089533s
+User time:    0.090000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 3***
+
+*****BIBLIOTEKA DZIELONA*****
+***TEST 1***
+1 maly plik, liczony 10 razy, za kazdym razem o jeden plik wiecej na raz, tablica o rozmiarze 50, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000007s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.003774s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000003s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004301s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004063s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000003s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.005417s
+User time:    0.010000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004597s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004562s
+User time:    0.000000s
+System time:  0.010000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 1***
+
+***TEST 2***
+1 maly plik, 1 sredni, 1 duzy, liczone za kazdym razem o jeden wiecej, tablica o rozmiarze 5000, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000035s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.044638s
+User time:    0.040000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.043442s
+User time:    0.040000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.043381s
+User time:    0.030000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.044817s
+User time:    0.050000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.044571s
+User time:    0.030000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.044692s
+User time:    0.050000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 2***
+
+***TEST 3***
+5 malych plikow, 3 srednie, 2 duze, liczone za kazdym razem o jeden raz wiecej, tablica o rozmiarze 50000, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000160s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.089923s
+User time:    0.080000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.090033s
+User time:    0.080000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.091327s
+User time:    0.080000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.092211s
+User time:    0.080000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.090994s
+User time:    0.090000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.089222s
+User time:    0.080000s
+System time:  0.010000s
+
+remove block:
+Real time:    0.000003s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 3***
+
+*****BIBLIOTEKA LADOWANA DYNAMICZNIE*****
+***TEST 1***
+1 maly plik, liczony 10 razy, za kazdym razem o jeden plik wiecej na raz, tablica o rozmiarze 50, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000006s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004454s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004020s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004115s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000003s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.004857s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.005655s
+User time:    0.000000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.004645s
+User time:    0.010000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 1***
+
+***TEST 2***
+1 maly plik, 1 sredni, 1 duzy, liczone za kazdym razem o jeden wiecej, tablica o rozmiarze 5000, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000032s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.043801s
+User time:    0.040000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.043187s
+User time:    0.040000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.044852s
+User time:    0.040000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.043988s
+User time:    0.040000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.044386s
+User time:    0.030000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.043262s
+User time:    0.040000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000013s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 2***
+
+***TEST 3***
+5 malych plikow, 3 srednie, 2 duze, liczone za kazdym razem o jeden raz wiecej, tablica o rozmiarze 50000, calosc powtorzona 3 razy
+
+create table:
+Real time:    0.000190s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.090448s
+User time:    0.080000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.090071s
+User time:    0.080000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.088827s
+User time:    0.080000s
+System time:  0.010000s
+
+remove block:
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.089033s
+User time:    0.080000s
+System time:  0.000000s
+
+wc files:
+Real time:    0.089127s
+User time:    0.080000s
+System time:  0.010000s
+
+wc files:
+Real time:    0.090575s
+User time:    0.090000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+***KONIEC TESTU 3***
+

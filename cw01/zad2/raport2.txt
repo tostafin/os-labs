@@ -1,70 +1,75 @@
 ***TEST 1***
-1 maly plik, liczony 10 razy, za każdym razem o jeden plik więcej na raz, tablica o rozmiarze 50, calosc powtorzona 3 razy
+1 maly plik, liczony 10 razy, za kazdym razem o jeden plik wiecej na raz, tablica o rozmiarze 50, calosc powtorzona 3 razy
 
 create table:
-Real time:		0.000012s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000010s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.006598s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.006577s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000002s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.006492s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.013134s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.006668s
-User time:		0.000000s
-System time:	0.010000s
+Real time:    0.006937s
+User time:    0.010000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000003s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000001s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.007656s
-User time:		0.010000s
-System time:	0.000000s
+Real time:    0.007519s
+User time:    0.000000s
+System time:  0.010000s
 
 wc files:
-Real time:		0.009561s
-User time:		0.000000s
-System time:	0.010000s
+Real time:    0.007201s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.007924s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.007588s
+User time:    0.000000s
+System time:  0.010000s
 
 remove block:
-Real time:		0.000003s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000001s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000001s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
 
 ***KONIEC TESTU 1***
 
@@ -72,137 +77,149 @@ System time:	0.000000s
 1 maly plik, 1 sredni, 1 duzy, liczone za kazdym razem o jeden wiecej, tablica o rozmiarze 5000, calosc powtorzona 3 razy
 
 create table:
-Real time:		0.000065s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000046s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.077311s
-User time:		0.060000s
-System time:	0.010000s
+Real time:    0.084327s
+User time:    0.070000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000001s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000004s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.077725s
-User time:		0.070000s
-System time:	0.000000s
+Real time:    0.086193s
+User time:    0.070000s
+System time:  0.010000s
 
 wc files:
-Real time:		0.080674s
-User time:		0.070000s
-System time:	0.010000s
+Real time:    0.108659s
+User time:    0.090000s
+System time:  0.010000s
 
 remove block:
-Real time:		0.000003s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000003s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000003s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.075542s
-User time:		0.070000s
-System time:	0.000000s
+Real time:    0.091098s
+User time:    0.080000s
+System time:  0.010000s
 
 wc files:
-Real time:		0.076808s
-User time:		0.070000s
-System time:	0.010000s
+Real time:    0.093270s
+User time:    0.080000s
+System time:  0.010000s
 
 wc files:
-Real time:		0.077497s
-User time:		0.070000s
-System time:	0.000000s
+Real time:    0.111632s
+User time:    0.100000s
+System time:  0.010000s
 
 remove block:
-Real time:		0.000003s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000001s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000001s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
 
 ***KONIEC TESTU 2***
 
 ***TEST 3***
+5 malych plikow, 3 srednie, 2 duze, liczone za kazdym razem o jeden raz wiecej, tablica o rozmiarze 50000, calosc powtorzona 3 razy
+
 create table:
-Real time:		0.000264s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000420s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.171580s
-User time:		0.140000s
-System time:	0.020000s
+Real time:    0.159287s
+User time:    0.140000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000002s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000003s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.158804s
-User time:		0.140000s
-System time:	0.010000s
+Real time:    0.234304s
+User time:    0.200000s
+System time:  0.020000s
 
 wc files:
-Real time:		0.158827s
-User time:		0.140000s
-System time:	0.010000s
+Real time:    0.235607s
+User time:    0.220000s
+System time:  0.010000s
 
 remove block:
-Real time:		0.000002s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000001s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
 
 wc files:
-Real time:		0.186640s
-User time:		0.170000s
-System time:	0.010000s
+Real time:    0.222971s
+User time:    0.190000s
+System time:  0.010000s
 
 wc files:
-Real time:		0.192977s
-User time:		0.150000s
-System time:	0.010000s
+Real time:    0.174022s
+User time:    0.160000s
+System time:  0.020000s
 
 wc files:
-Real time:		0.174454s
-User time:		0.150000s
-System time:	0.020000s
+Real time:    0.212844s
+User time:    0.200000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000003s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000002s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000002s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
 
 remove block:
-Real time:		0.000001s
-User time:		0.000000s
-System time:	0.000000s
+Real time:    0.000001s
+User time:    0.000000s
+System time:  0.000000s
+
+remove block:
+Real time:    0.000000s
+User time:    0.000000s
+System time:  0.000000s
 
 ***KONIEC TESTU 3***
 

@@ -5,10 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <ctype.h>
-#include <sys/times.h>
 #include <unistd.h>
-#include <sys/time.h>
 
 typedef struct MemoryBlock {
     char *wcResult;

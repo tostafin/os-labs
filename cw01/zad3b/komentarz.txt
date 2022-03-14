@@ -1,0 +1,5 @@
+Badamy dla poziomow optymalizacji -O1, -O2 oraz -O3.
+Najbardziej zauwazalna roznica wystepuje pomiedzy -O1 a reszta.
+Zmiana na wyzsze poziomy optymalizacji przyspiesza program ponad 1,5 razy.
+Natomiast roznica pomiedzy -O2 a -O3 jest niezauwazalna.
+W dodatku raz jeden poziom optymalizacji wskazuje wartosci szybsze od drugiego, w innym przypadku na odwrot.

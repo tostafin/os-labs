@@ -1,0 +1,5 @@
+Roznice dla malych plikow sa niezauwazale, czesto nawet trudne do zmierzenia przez program, gdyz operacje sa wykonywane blyskawicznie.
+Dla duzych plikow widac lekka przewage biblioteki wspoldzielonej nad ladowana dynamicznie oraz statycznej nad oboma.
+Jednak te roznice sa minimalne i moga byc dzielem przypadku, tym bardziej, ze w wiekszosci testow czasy sa bardzo zblizone.
+Zdecydowanie najwolniejsza operacja jest wc_files, co nie jest zaskakujace.
+Drugie miejsce zajmuje create_table, szczegolnie dla duzych tablic. Operacja remove_block jest zdecydowanie najszybsza.
