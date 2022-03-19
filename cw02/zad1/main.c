@@ -29,7 +29,10 @@ int main(int argc, char *argv[]) {
 
     FILE *file1 = fopen(fileName1, "r");
     FILE *file2 = fopen(fileName2, "w");
-    if (file1 == NULL || file2 == NULL) perror("Can't open files");
+    if (file1 == NULL || file2 == NULL) {
+        perror("Can't open files");
+        exit(EXIT_FAILURE);
+    }
     free(fileName1), free(fileName2);
 
     char c[1];
@@ -80,7 +83,10 @@ int main(int argc, char *argv[]) {
 
     int file1 = open(fileName1, O_RDONLY);
     int file2 = open(fileName2, O_WRONLY | O_TRUNC);
-    if (file1 < 0 || file2 < 0) perror("Can't open the files");
+    if (file1 < 0 || file2 < 0) {
+        perror("Can't open the files");
+        exit(EXIT_FAILURE);
+    }
     free(fileName1), free(fileName2);
 
     char c;

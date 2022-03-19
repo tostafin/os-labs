@@ -17,4 +17,4 @@ test_sys:
 	@(time ./main file1.txt file2.txt) 2>&1 | tee -a pomiar_zad_1.txt
 
 clean:
-	@rm -f pomiar_zad_1.txt
+	@rm -f pomiar_zad_1.txt main
