@@ -70,9 +70,7 @@ int main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     char *fileName1 = calloc(1 << 5, sizeof(char)), *fileName2 = calloc(1 << 5, sizeof(char));
     if (argc == 1) {
-        printf("Input the first file path:\n");
         scanf("%s", fileName1);
-        printf("Input the second file path:\n");
         scanf("%s", fileName2);
     } else if (argc == 3) {
         strcpy(fileName1, argv[1]);
