@@ -22,25 +22,25 @@ void printFileDetails(const char *absPath, const struct stat *buf) {
     char fileType[18];
     __mode_t statFileType = buf->st_mode;
     if (S_ISREG(statFileType)) {
-        strcpy(fileType, "regular file");
+        strcpy(fileType, "file");
         regularFiles++;
     } else if (S_ISDIR(statFileType)) {
-        strcpy(fileType, "directory");
+        strcpy(fileType, "dir");
         directories++;
     } else if (S_ISCHR(statFileType)) {
-        strcpy(fileType, "character device");
+        strcpy(fileType, "char dev");
         characterDevices++;
     } else if (S_ISBLK(statFileType)) {
-        strcpy(fileType, "block device");
+        strcpy(fileType, "block dev");
         blockDevices++;
     } else if (S_ISFIFO(statFileType)) {
-        strcpy(fileType, "fifo (named pipe)");
+        strcpy(fileType, "fifo");
         fifoNamedPipes++;
     } else if (S_ISLNK(statFileType)) {
-        strcpy(fileType, "symbolic link");
+        strcpy(fileType, "slink");
         symbolicLinks++;
     } else if (S_ISSOCK(statFileType)) {
-        strcpy(fileType, "socket");
+        strcpy(fileType, "sock");
         sockets++;
     }
 

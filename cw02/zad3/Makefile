@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c11 -Wall -Werror -g
+CFLAGS = -std=c11 -Wall
 
 all: test
 

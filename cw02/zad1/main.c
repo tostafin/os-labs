@@ -16,11 +16,9 @@ void raiseError(const char *message) {
 
 #ifdef USE_LIB
 int main(int argc, char *argv[]) {
-    char *fileName1 = calloc(1 << 10, sizeof(char)), *fileName2 = calloc(1 << 10, sizeof(char));
+    char *fileName1 = calloc(1 << 5, sizeof(char)), *fileName2 = calloc(1 << 5, sizeof(char));
     if (argc == 1) {
-        fprintf(stdout, "Input the first file name:\n");
         fscanf(stdin, "%s", fileName1);
-        fprintf(stdout, "Input the second file name:\n");
         fscanf(stdin, "%s", fileName2);
     } else if (argc == 3) {
         strcpy(fileName1, argv[1]);
