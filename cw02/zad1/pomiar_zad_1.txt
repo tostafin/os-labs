@@ -1,12 +1,12 @@
 Wariant lib:
 
-real	0m0.371s
-user	0m0.333s
-sys	0m0.029s
+real	0m0.211s
+user	0m0.191s
+sys	0m0.015s
 
 
 Wariant sys:
 
-real	0m11.909s
-user	0m0.539s
-sys	0m11.141s
+real	0m6.639s
+user	0m0.233s
+sys	0m6.314s
