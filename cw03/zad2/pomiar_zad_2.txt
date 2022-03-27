@@ -1,0 +1,20 @@
+Szerokość: 0.0002, n = 10000
+3.141529
+real	0m0.831s
+user	0m0.868s
+sys	0m0.840s
+
+
+Szerokość: 0.0001, n = 20000
+3.141620
+real	0m1.512s
+user	0m0.918s
+sys	0m1.374s
+
+
+Szerokość: 0.00005, n = 30000
+3.141319
+real	0m2.136s
+user	0m0.939s
+sys	0m1.970s
+
