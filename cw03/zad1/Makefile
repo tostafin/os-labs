@@ -5,7 +5,7 @@ all: test clean
 
 test:
 	@$(CC) $(CFLAGS) main.c -o main
-	@./main 7
+	@./main 10
 
 clean:
 	@rm -f main
