@@ -16,21 +16,25 @@ double func(double x) {
 void savePartialCalculation(int n, pid_t *child_pid) {
     int interval[2] = {0, 1};
     double dx = (double) (interval[1] - interval[0]) / n;
-    int i = 1;
-    while (*child_pid != 0 && n--) {
-        *child_pid = fork();
-        double tempVal = func(interval[0] + i * dx) * dx;
-        char fileName[100];
-        sprintf(fileName, "w%d.txt", i);
-        ++i;
-        FILE *file = fopen(fileName, "w");
-        if (file == NULL) {
-            perror("Can't open a temp file");
-            exit(EXIT_FAILURE);
+    for (int i = 1; i <= n; ++i) {
+        if ((*child_pid = fork()) < 0) {
+            perror("Forking error");
+            abort();
         }
+        else if (*child_pid == 0) {
+            double tempVal = func(interval[0] + i * dx) * dx;
+            char fileName[100];
+            sprintf(fileName, "w%d.txt", i);
+            FILE *file = fopen(fileName, "w");
+            if (file == NULL) {
+                perror("Can't open a temp file");
+                exit(EXIT_FAILURE);
+            }
 
-        fprintf(file, "%lf", tempVal);
-        fclose(file);
+            fprintf(file, "%lf", tempVal);
+            fclose(file);
+            exit(EXIT_SUCCESS);
+        }
     }
 }
 
@@ -58,13 +62,13 @@ void collectFinalResult(int n, const pid_t *child_pid) {
         } else {
             raiseError("The child processes weren't terminated correctly.");
         }
-        printf("%lf", res);
+        printf("%lf\n", res);
     }
 }
 
 int main(int argc, char *argv[]) {
     if (argc != 3)
-        raiseError("You must pass exactly two arguments: the width of each rectangle and number of"
+        raiseError("You must pass exactly two arguments: the width of each rectangle and a number of"
                    " child processes.");
     double width = strtod(argv[1], NULL);
     int n = (int) strtol(argv[2], NULL, 10);
@@ -76,3 +80,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+

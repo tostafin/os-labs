@@ -1,20 +1,23 @@
-Szerokość: 0.0002, n = 10000
-3.141529
-real	0m0.831s
-user	0m0.868s
-sys	0m0.840s
+Szerokosc: 0.0005, n = 2000
+3.141099
+
+real	0m2.487s
+user	0m0.455s
+sys	0m0.340s
 
 
-Szerokość: 0.0001, n = 20000
-3.141620
-real	0m1.512s
-user	0m0.918s
-sys	0m1.374s
+Szerokosc: 0.00025, n = 4000
+3.141353
+
+real	0m5.425s
+user	0m0.931s
+sys	0m0.685s
 
 
-Szerokość: 0.00005, n = 30000
-3.141319
-real	0m2.136s
-user	0m0.939s
-sys	0m1.970s
+Szerokosc: 0.0002, n = 5000
+3.141393
+
+real	0m7.191s
+user	0m1.220s
+sys	0m0.897s
 
