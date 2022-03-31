@@ -1,0 +1,7 @@
+Po funkcji fork:
+- ignorowany sygnal jest nadal ignorowany w procesie potomnym
+- handler i mask sa dziedziczone
+- sygnal, ktory czeka w przodku, nie jest widoczny w potomku
+
+Po funkcji exec:
+
