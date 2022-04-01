@@ -1,7 +1,15 @@
+Podsumowanie:
 Po funkcji fork:
-- ignorowany sygnal jest nadal ignorowany w procesie potomnym
-- handler i mask sa dziedziczone
-- sygnal, ktory czeka w przodku, nie jest widoczny w potomku
+- ignorowany sygnal jest nadal ignorowany
+- handler z procesu rodzica jest nadal zainstalowany w procesie dziecka
+- maska jest rowniez dziedziczona
+- sygnal zablokowany w procesie macierzystym jest niewidoczny jako oczekujacy w procesie potomnym
 
 Po funkcji exec:
+- ignorowany sygnal jest nadal ignorowany
+- maska jest taka sama jak w procesie wywolujacym funkcje exec
+- sygnal zablokowany jest widoczny jako oczekujacy po wywolaniu funkcji exec
 
+Wnioski:
+- wykonanie programu potwierdza teorie na temat zachowan poszczegolnych sygnalow
+- wiele funkcji powtarza sie, w zwiazku z czym warto napisac biblioteke, do ktorej je przeniesiemy

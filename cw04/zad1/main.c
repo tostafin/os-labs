@@ -1,69 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <unistd.h>
-
-typedef enum mode {
-    IGNORE,
-    HANDLER,
-    MASK,
-    PENDING
-} Mode;
-
-void raiseError(char *message) {
-    fprintf(stderr, "%s", message);
-    exit(EXIT_FAILURE);
-}
-
-void raisePError(char *message) {
-    perror(message);
-    exit(EXIT_FAILURE);
-}
-
-Mode getMode(char *mode) {
-    if (strcmp(mode, "ignore") == 0) return IGNORE;
-    if (strcmp(mode, "handler") == 0) return HANDLER;
-    if (strcmp(mode, "mask") == 0) return MASK;
-    if (strcmp(mode, "pending") == 0) return PENDING;
-
-    raiseError("The passed argument must be one of the following: ignore, handler, mask, pending");
-    exit(EXIT_FAILURE);  // TODO: remove
-}
+#include "sigHelper.h"
 
 void handleSignal(int sigNum) {
     printf("Handling signal number %d.\n", sigNum);
-}
-
-void maskSignal(void) {
-    sigset_t sigset;
-    if (sigemptyset(&sigset) == -1) raisePError("sigemptyset");
-    if (sigaddset(&sigset, SIGUSR1) == -1) raisePError("sigaddset");
-    if (sigprocmask(SIG_BLOCK, &sigset, NULL) == -1) raisePError("sigprocmask");
-}
-
-void checkPending(void) {
-    sigset_t sigset;
-    if (sigpending(&sigset) == -1) raisePError("sigpending");
-    int pending = sigismember(&sigset, SIGUSR1);
-    if (pending == -1) raisePError("sigismember");
-
-    printf("Status of the signal: %s\n", pending ? "pending" : "not pending");
-}
-
-void checkMask(void) {
-    sigset_t sigset;
-    if (sigprocmask(0, NULL, &sigset) == -1) raisePError("sigprocmask");
-    int inherited;
-    if ((inherited = sigismember(&sigset, SIGUSR1)) == -1) raisePError("sigismember");
-
-    printf("Mask was%s inherited by the child process.", !inherited ? " not" : "");
 }
 
 int main(int argc, char *argv[]) {
     if (argc != 2) raiseError("You must pass exactly one argument.");
 
     Mode mode = getMode(argv[1]);
+    printf("\n\n%s:\n", argv[1]);
     switch (mode) {
         case IGNORE:
             signal(SIGUSR1, SIG_IGN);
@@ -76,7 +21,6 @@ int main(int argc, char *argv[]) {
         case MASK:
         case PENDING:
             maskSignal();
-            raise(SIGUSR1);
             break;
     }
 
@@ -85,14 +29,39 @@ int main(int argc, char *argv[]) {
 
     pid_t childPid;
     if ((childPid = fork()) == 0) {
-        if (mode != PENDING) raise(SIGUSR1);
-        else checkPending();
-        if (mode == MASK) checkMask();
+    	switch (mode) {
+        case IGNORE:
+        	puts("\nIgnore signal in the child process:");
+            raise(SIGUSR1);
+            break;
+
+        case HANDLER:
+        	puts("\nHandler in the child process:\n");
+            raise(SIGUSR1);
+            break;
+
+        case MASK:
+        	puts("\nMask in the child process: ");
+        	raise(SIGUSR1);
+        	checkMask();
+            break;
+        
+        case PENDING:
+        	puts("\nPending status in the child process:");
+            checkPending();
+            break;
+    	}
+   
+        if (mode != HANDLER) {
+            if (execl("./execTest", "execTest", argv[1], NULL) == -1) raisePError("execl");
+        }
+        
     } else if (childPid == -1) {
         perror("Fork");
         abort();
     }
+    
+    wait(0);
 
     return 0;
 }
-
