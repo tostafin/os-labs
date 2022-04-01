@@ -17,7 +17,6 @@ Mode getMode(char *mode) {
     if (strcmp(mode, "pending") == 0) return PENDING;
 
     raiseError("The passed argument must be one of the following: ignore, handler, mask, pending");
-    exit(EXIT_FAILURE);  // TODO: remove
 }
 
 void maskSignal(void) {
