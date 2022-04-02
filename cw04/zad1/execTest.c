@@ -10,9 +10,9 @@ int main(int argc, char *argv[]) {
         case IGNORE:
             puts("Ignore in exec:");
             break;
-            
+
         case HANDLER:
-        	break;
+            break;
 
         case MASK:
             puts("Mask in exec:");
@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
             checkPending();
             break;
     }
-	
-	puts("END OF EXEC");
+
+    puts("END OF EXEC");
     return 0;
 }
