@@ -11,7 +11,7 @@ void raisePError(char *message) {
 }
 
 void SIGFPEHandler(int signo, siginfo_t *info, void *context) {
-    printf("Signal number: %d, PID: %d\n", signo, getpid());
+    printf("Signal number: %d, sending process id: %d\n", signo, info->si_pid);
     if (info->si_code == FPE_INTDIV) {
         puts("SIGFPE working!");
         exit(EXIT_SUCCESS);
@@ -23,7 +23,7 @@ void SIGFPEHandler(int signo, siginfo_t *info, void *context) {
 }
 
 void SIGCHLDHandler(int signo, siginfo_t *info, void *context) {
-    printf("Signal number: %d, PID: %d\n", signo, getpid());
+    printf("Signal number: %d, sending process id: %d\n", signo, info->si_pid);
     if (info->si_code == CLD_EXITED) {
         printf("SIGCHLD working! Exit status of the child: %d\n", info->si_status);
         // no exit here since we're exiting in the parent process
@@ -34,7 +34,7 @@ void SIGCHLDHandler(int signo, siginfo_t *info, void *context) {
 }
 
 void SIGUSR1Handler(int signo, siginfo_t *info, void *context) {
-    printf("Signal number: %d, PID: %d\n", signo, getpid());
+    printf("Signal number: %d, sending process id: %d\n", signo, info->si_pid);
     if (info->si_code == SI_QUEUE) {
         printf("SIGUSR1 working! Integer value passed by sigqueue function: %d\n", info->si_value.sival_int);
         exit(EXIT_SUCCESS);
@@ -47,7 +47,7 @@ void SIGUSR1Handler(int signo, siginfo_t *info, void *context) {
 int SA_NODEFERCnt = 0;
 bool cntReachMax = false;
 void SA_NODEFERHandler(int signo) {
-    printf("Signal number: %d, PID: %d\n", signo, getpid());
+    printf("Signal number: %d\n", signo);
     printf("SA_NODEFERCnt = %d at the handler start\n", SA_NODEFERCnt);
     ++SA_NODEFERCnt;
     if (SA_NODEFERCnt <= 4) {
@@ -114,6 +114,7 @@ void testSA_NODEFER(void) {
     prepareSigaction(SIGUSR2, SA_NODEFERHandler, SA_NODEFER);
     raise(SIGUSR2);
     if (cntReachMax) puts("SA_NODEFER working!");
+    puts("SA_NODEFER working!");
 }
 
 void testSA_RESETHAND(void) {
