@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
     prepareSigaction(endSigNum, endHandler);
 
     sigset_t mask;
-    prepareMask(&mask, sigMode, startSigNum, endSigNum);
+    prepareMask(&mask, startSigNum, endSigNum);
 
     while (receivingSignals) {
         if (sigsuspend(&mask) != -1) raisePError("sigsuspend");

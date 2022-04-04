@@ -55,7 +55,7 @@ int getEndSigNum(SigMode sigMode) {
     }
 }
 
-void prepareMask(sigset_t *mask, SigMode sigMode, int startSigNum, int stopSigNum) {
+void prepareMask(sigset_t *mask, int startSigNum, int stopSigNum) {
     if (sigfillset(mask) == -1) raisePError("sigfillset");
     if (sigdelset(mask, startSigNum) == -1) raisePError("sigdelset");
     if (sigdelset(mask, stopSigNum) == -1) raisePError("sigdelset");
@@ -92,4 +92,3 @@ void sendSignals(pid_t pid, SigMode sigMode, int numOfSignals) {
             raiseError("Wrong signal mode.");
     }
 }
-

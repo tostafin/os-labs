@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
     sendSignals(catcherPid, sigMode, signalsToSend);
 
     sigset_t mask;
-    prepareMask(&mask, sigMode, startSigNum, endSigNum);
+    prepareMask(&mask, startSigNum, endSigNum);
 
     while (sendingSignals) {
         if (sigsuspend(&mask) != -1) raisePError("sigsuspend");
