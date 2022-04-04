@@ -4,9 +4,14 @@ int signalsToSend;
 int receivedSignals = 0;
 volatile bool receivingSignals = true;
 SigMode sigMode;
+bool confirmingSignals = true;
 
 void startHandler(int signo, siginfo_t *info, void *context) {
-    puts("Sender received a confirmation from catcher.");
+    if (confirmingSignals) puts("Sender received a confirmation from catcher.");
+    if (sigMode == SIGQUEUE && info->si_value.sival_int != -1) {
+        printf("Received signal number %d\n", info->si_value.sival_int);
+    }
+    
     ++receivedSignals;
 }
 
@@ -31,14 +36,16 @@ int main(int argc, char *argv[]) {
     prepareMask(&mask, startSigNum, endSigNum);
     blockAllSignals();
 
-    sendSignals(catcherPid, sigMode, signalsToSend, &mask, true);
+    sendSignals(catcherPid, sigMode, signalsToSend, &mask, confirmingSignals);
+    confirmingSignals = false;
 
     prepareMask(&mask, startSigNum, endSigNum);
     while (receivingSignals) {
         if (sigsuspend(&mask) != -1) raisePError("sigsuspend");
     }
 
-    printf("Sender received %d signals out of %d sent to catcher (circa %.2f%%).\n", receivedSignals - signalsToSend,
+    printf("Sender received %d signals out of %d sent to catcher (circa %.2f%%).\n", (receivedSignals - signalsToSend),
            signalsToSend, ((double) (receivedSignals - signalsToSend) / (double) signalsToSend) * 100);
+
     return 0;
 }

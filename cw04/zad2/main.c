@@ -108,7 +108,7 @@ void testSA_SIGINFO(void) {
 }
 
 void testSA_NODEFER(void) {
-    puts("\n\nTesting SA_NODEFER");
+    puts("\n\nTesting flag SA_NODEFER");
     puts("Expecting the counter to first rise to 4 and then go back to 0. Without the SA_NODEFER flag the counter "
          "would equal at most 1.");
     prepareSigaction(SIGUSR2, SA_NODEFERHandler, SA_NODEFER);
@@ -118,7 +118,7 @@ void testSA_NODEFER(void) {
 }
 
 void testSA_RESETHAND(void) {
-    puts("\n\nTesting SA_RESETHAND");
+    puts("\n\nTesting flag SA_RESETHAND");
     prepareSigaction(SIGCHLD, SA_RESETHANDHandler, SA_RESETHAND);
     puts("Resetting SIGCHLD to default");
     raise(SIGCHLD);

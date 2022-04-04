@@ -4,7 +4,7 @@ CFLAGS = -Wall
 all: test clean
 
 test:
-	@$(CC) -c ./sigHelper.c
+	@$(CC) -c sigHelper.c
 	@ar cr libsigHelper.a sigHelper.o
 	@$(CC) $(CFLAGS) main.c -o main -L. -l:libsigHelper.a
 	@$(CC) $(CFLAGS) execTest.c -o execTest -L. -l:libsigHelper.a

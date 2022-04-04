@@ -12,4 +12,5 @@ Po funkcji exec:
 
 Wnioski:
 - wykonanie programu potwierdza teorie na temat zachowan poszczegolnych sygnalow
-- wiele funkcji powtarza sie, w zwiazku z czym warto napisac biblioteke, do ktorej je przeniesiemy
+- uwidacznia sie tez roznica w zachowaniach pomiedzy funkcja fork a funkcjami z rodziny exec
+- wiele funkcji uzytych w programach jest dosc uniwersalna i powtarza sie, w zwiazku z czym rozwazylem stworzenie biblioteki statycznej

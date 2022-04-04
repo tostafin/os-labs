@@ -114,6 +114,7 @@ void sendConfirmation(pid_t pid, SigMode sigMode, sigset_t *mask) {
 
         case SIGQUEUE:;
             sigval_t sigNo;
+            sigNo.sival_int = -1;
             if (sigqueue(pid, SIGUSR1, sigNo) == -1) raisePError("sigqueue");
             sigsuspend(mask);
             break;

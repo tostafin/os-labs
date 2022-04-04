@@ -1,0 +1,41 @@
+./catcher KILL
+Catcher PID: 8147
+Catcher received 275 signals in total.
+
+./sender 8147 5000 KILL
+Sender received 11 signals out of 5000 sent to catcher (circa 0.22%).
+
+
+
+./catcher SIGQUEUE
+Catcher PID: 8156
+Catcher received 446 signals in total.
+
+./sender 8156 5000 SIGQUEUE
+Received signal number 1
+Received signal number 42
+Received signal number 195
+Received signal number 211
+Received signal number 226
+Received signal number 247
+Received signal number 269
+Received signal number 291
+Received signal number 311
+Received signal number 332
+Received signal number 352
+Received signal number 372
+Received signal number 393
+Received signal number 413
+Received signal number 432
+Sender received 15 signals out of 5000 sent to catcher (circa 0.30%).
+
+
+
+./catcher SIGRT
+Catcher PID: 8295
+Catcher received 5000 signals in total.
+
+./sender 8295 5000 SIGRT
+Sender received 5000 signals out of 5000 sent to catcher (circa 100.00%).
+
+

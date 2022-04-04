@@ -7,8 +7,6 @@ SigMode sigMode;
 sigset_t mask;
 
 void startHandler(int signo, siginfo_t *info, void *context) {
-    if (sigMode == SIGQUEUE) printf("Received signal number %d\n", info->si_value.sival_int);
-
     senderPID = info->si_pid;
     sendConfirmation(senderPID, sigMode, &mask);
     ++receivedSignals;
@@ -39,5 +37,6 @@ int main(int argc, char *argv[]) {
     sendSignals(senderPID, sigMode, receivedSignals, &mask, false);
 
     printf("Catcher received %d signals in total.\n", receivedSignals);
+
     return 0;
 }

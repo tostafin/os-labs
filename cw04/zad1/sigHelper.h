@@ -1,5 +1,5 @@
-#ifndef ZAD1_SIGHELPER_H
-#define ZAD1_SIGHELPER_H
+#ifndef SIGHELPER_H
+#define SIGHELPER_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,4 +21,4 @@ void maskSignal(void);
 void checkMask(void);
 void checkPending(void);
 
-#endif //ZAD1_SIGHELPER_H
+#endif //SIGHELPER_H
