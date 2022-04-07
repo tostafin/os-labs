@@ -1,0 +1,7 @@
+# Definicja skladnikow
+skladnik1 = cat /etc/passwd
+skladnik2 = grep 1 | sort
+skladnik3 = wc -l
+
+# Wykonanie potoku
+skladnik1 | skladnik2 | skladnik3
