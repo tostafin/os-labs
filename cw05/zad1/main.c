@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <wait.h>
 
 void raiseError(char *message) {
     fprintf(stderr, "%s\n", message);
@@ -107,6 +108,56 @@ void getCommandsAndArguments(char *commandsAndArguments[5], char *command) {
     commandsAndArguments[i] = NULL;
 }
 
+void execCommands(int splitCommandsCnt, char **splitCommands) {
+    int numOfDescriptors = splitCommandsCnt - 1;
+    int fd[numOfDescriptors][2];
+    int i;
+    for (i = 0; i < numOfDescriptors; ++i) {
+        if (pipe(fd[i]) == -1) raisePError("pipe");
+    }
+
+    pid_t childPid;
+    if ((childPid = fork()) == 0) {
+        dup2(fd[0][1], STDOUT_FILENO);
+        closePipes(numOfDescriptors, fd);
+        char *commandsAndArguments[5];
+        getCommandsAndArguments(commandsAndArguments, splitCommands[0]);
+
+        if (execvp(commandsAndArguments[0], commandsAndArguments) == -1) raisePError("execvp");
+
+    } else if (childPid == -1) {
+        raisePError("fork");
+    }
+
+    for (i = 0; i <= numOfDescriptors - 2; ++i) {
+        if ((childPid = fork()) == 0) {
+            dup2(fd[i][0], STDIN_FILENO);
+            dup2(fd[i + 1][1], STDOUT_FILENO);
+            closePipes(numOfDescriptors, fd);
+            char *commandsAndArguments[5];
+            getCommandsAndArguments(commandsAndArguments, splitCommands[i + 1]);
+
+            if (execvp(commandsAndArguments[0], commandsAndArguments) == -1) raisePError("execvp");
+        } else if (childPid == -1) {
+            raisePError("fork");
+        }
+    }
+
+    if ((childPid = fork()) == 0) {
+        dup2(fd[numOfDescriptors - 1][0], STDIN_FILENO);
+        closePipes(numOfDescriptors, fd);
+        char *commandsAndArguments[5];
+        getCommandsAndArguments(commandsAndArguments, splitCommands[numOfDescriptors]);
+
+        if (execvp(commandsAndArguments[0], commandsAndArguments) == -1) raisePError("execvp");
+    } else if (childPid == -1) {
+        raisePError("fork");
+    }
+
+    closePipes(numOfDescriptors, fd);
+    while (wait(NULL) > 0);
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) raiseError("You must pass exactly one argument: path to a text file.");
 
@@ -122,27 +173,9 @@ int main(int argc, char *argv[]) {
     int splitCommandsCnt = 0;
     char **splitCommands = splitCommandsInOrder(&splitCommandsCnt, splitComponents, commandOrder, commandsCnt);
 
-    int numOfDescriptors = splitCommandsCnt - 1;
-    int fd[numOfDescriptors - 1][2];
+    execCommands(splitCommandsCnt, splitCommands);
+
     int i;
-    for (i = 0; i < splitCommandsCnt - 1; ++i) {
-        if (pipe(fd[i]) == -1) raisePError("pipe");
-    }
-
-    pid_t childPid;
-    int commandIdx = 0;
-    if ((childPid = fork()) == 0) {
-        dup2(fd[0][1], STDOUT_FILENO);
-        closePipes(numOfDescriptors, fd);
-        char *commandsAndArguments[5];
-        getCommandsAndArguments(commandsAndArguments, splitCommands[commandIdx]);
-        ++commandIdx;
-
-        execvp(commandsAndArguments[0], commandsAndArguments);
-    } else if (childPid == -1) {
-        raisePError("fork");
-    }
-
     for (i = 1; i < compsCnt; ++i) free(splitComponents[i]);
     free(splitComponents);
     free(commandOrder);
