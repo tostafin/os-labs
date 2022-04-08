@@ -50,7 +50,7 @@ int *getCommandsOrder(FILE *file, int *commandsCnt) {
     while (token != NULL) {
         token += 8; // "skladnik" has 8 letters
         commandsOrder[(*commandsCnt)++] = (int) strtol(token, NULL, 10);
-        token = strtok(NULL, " | ");
+        token = strtok(NULL, " |");
         if (*commandsCnt == numOfArgs - 1) {
             numOfArgs *= 2;
             commandsOrder = realloc(commandsOrder, numOfArgs * sizeof(*commandsOrder));
@@ -61,18 +61,24 @@ int *getCommandsOrder(FILE *file, int *commandsCnt) {
     return commandsOrder;
 }
 
-char **splitCommandsInOrder(int *splitCommandsCnt, char **splitComponents, int *commandOrder, int commandsCnt) {
+char **splitCommandsInOrder(int *splitCommandsCnt, char **splitComponents, const int *commandOrder, int commandsCnt) {
     int numOfCommands = 10;
     char **commands = malloc(numOfCommands * sizeof(*commands));
-    char *token, *strCpy;
+    char *strStart, *strEnd;
 
     for (int i = 0; i < commandsCnt; ++i) {
-        strCpy = strdup(splitComponents[commandOrder[i]]);
-        token = strsep(&strCpy, "|");
-        while (token != NULL) {
-            commands[*splitCommandsCnt] = malloc(strlen(token) * sizeof(*commands));
-            commands[(*splitCommandsCnt)++] = token;
-            token = strsep(&strCpy, "|");
+        strStart = strEnd = (splitComponents[commandOrder[i]]);
+        while (*strEnd != '\0') {
+            while (*strEnd != '|' && *strEnd != '\0') ++strEnd; // searching for pipe
+            if (*(strEnd - 1) == ' ') *(strEnd - 1) = '\0'; // space before the pipe is the end of a command
+            commands[*splitCommandsCnt] = malloc(strlen(strStart) * sizeof(*commands));
+            strcpy(commands[(*splitCommandsCnt)++], strStart);
+            if (*(strEnd - 1) == '\0') {
+                *(strEnd - 1) = ' '; // bringing the space back
+                strEnd += 2; // jumping to the next command
+            }
+
+            strStart = strEnd;
             if (*splitCommandsCnt == numOfCommands - 1) {
                 numOfCommands *= 2;
                 commands = realloc(commands, numOfCommands * sizeof(*commands));
@@ -97,16 +103,14 @@ int main(int argc, char *argv[]) {
 
     int splitCommandsCnt = 0;
     char **splitCommands = splitCommandsInOrder(&splitCommandsCnt, splitComponents, commandOrder, commandsCnt);
-    printf("%s\n", splitCommands[0]);
-    printf("%s\n", splitCommands[1]);
-    printf("%s\n", splitCommands[2]);
 
     int i;
     for (i = 1; i < compsCnt; ++i) free(splitComponents[i]);
     free(splitComponents);
     free(commandOrder);
-//    for (i = 0; i < splitCommandsCnt; ++i) free(splitCommands[i]);
-//    free(splitCommands);
+    for (i = 0; i < splitCommandsCnt; ++i) free(splitCommands[i]);
+    free(splitCommands);
     fclose(file);
     return 0;
 }
+
