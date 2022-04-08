@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <ctype.h>
 
 void raiseError(char *message) {
     fprintf(stderr, "%s\n", message);
@@ -89,6 +88,25 @@ char **splitCommandsInOrder(int *splitCommandsCnt, char **splitComponents, const
     return commands;
 }
 
+void closePipes(int numOfDescriptors, int fd[numOfDescriptors][2]) {
+    for (int i = 0; i < numOfDescriptors; ++i) {
+        if (close(fd[i][0]) == -1) raisePError("close");
+        if (close(fd[i][1]) == -1) raisePError("close");
+    }
+}
+
+void getCommandsAndArguments(char *commandsAndArguments[5], char *command) {
+    int i = 0;
+    char *token = strtok(command, " ");
+
+    while (token != NULL) {
+        commandsAndArguments[i] = token;
+        ++i;
+        token = strtok(NULL, " ");
+    }
+    commandsAndArguments[i] = NULL;
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 2) raiseError("You must pass exactly one argument: path to a text file.");
 
@@ -104,7 +122,27 @@ int main(int argc, char *argv[]) {
     int splitCommandsCnt = 0;
     char **splitCommands = splitCommandsInOrder(&splitCommandsCnt, splitComponents, commandOrder, commandsCnt);
 
+    int numOfDescriptors = splitCommandsCnt - 1;
+    int fd[numOfDescriptors - 1][2];
     int i;
+    for (i = 0; i < splitCommandsCnt - 1; ++i) {
+        if (pipe(fd[i]) == -1) raisePError("pipe");
+    }
+
+    pid_t childPid;
+    int commandIdx = 0;
+    if ((childPid = fork()) == 0) {
+        dup2(fd[0][1], STDOUT_FILENO);
+        closePipes(numOfDescriptors, fd);
+        char *commandsAndArguments[5];
+        getCommandsAndArguments(commandsAndArguments, splitCommands[commandIdx]);
+        ++commandIdx;
+
+        execvp(commandsAndArguments[0], commandsAndArguments);
+    } else if (childPid == -1) {
+        raisePError("fork");
+    }
+
     for (i = 1; i < compsCnt; ++i) free(splitComponents[i]);
     free(splitComponents);
     free(commandOrder);
