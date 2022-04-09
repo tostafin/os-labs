@@ -13,7 +13,7 @@ void raisePError(char *message) {
 }
 
 void readOutput(FILE *stream) {
-    if (stream == NULL) raisePError("FILE");
+    if (stream == NULL) raisePError("popen");
     char *line = NULL;
     size_t len = 0;
     while ((getline(&line, &len, stream)) != -1) printf("%s", line);
