@@ -1,19 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include <fcntl.h>
-#include <string.h>
-
-void raiseError(char *message) {
-    fprintf(stderr, "%s\n", message);
-    exit(EXIT_FAILURE);
-}
-
-void raisePError(char *message) {
-    perror(message);
-    exit(EXIT_FAILURE);
-}
+#include "common.h"
 
 // producer pipePath i filePath N
 int main(int argc, char *argv[]) {
