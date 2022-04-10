@@ -26,11 +26,12 @@ int main(int argc, char *argv[]) {
     char buff[N + 10];
     size_t len;
     int i;
-    int numOfProducers = 1;
+    int numOfProducers = 2;
     char lines[numOfProducers][1000];
     for (int j = 0; j < numOfProducers; ++j) lines[j][0] = '\0';
     while ((len = read(fifo, buff, N + 10)) > 0) {
-        buff[len] = '\0';
+        buff[len] = '\n';
+        buff[len + 1] = '\0';
         char *content;
         i = (int) strtol(buff, &content, 10);
         ++content;
@@ -41,11 +42,7 @@ int main(int argc, char *argv[]) {
 
     FILE *file = fopen(argv[2], "w");
     if (file == NULL) raisePError("fopen");
-    for (int j = 0; j < numOfProducers; ++j) {
-        size_t lineLen = strlen(lines[j]);
-        lines[j][lineLen] = '\n';
-        fwrite(lines[j], 1, lineLen, file);
-    }
+    for (int j = 0; j < numOfProducers; ++j) fwrite(lines[j], 1, strlen(lines[j]), file);
 
     fclose(file);
     return 0;
