@@ -1,0 +1,3 @@
+Uruchomienie Producenta i Konsumenta w roznych terminalach daje oczekiwany rezultat: programy dzialaja.
+
+Uruchomienie programu runOneConsumerFiveProducers rowniez dziala.
