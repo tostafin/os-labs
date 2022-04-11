@@ -1,10 +1,8 @@
 #include "common.h"
 
 int main() {
-    system("rm -f pipe");
-    mode_t mode;
-    mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH | S_IFIFO;
-    mkfifo("./pipe", mode);
+    remove("pipe");
+    mkfifo("pipe", 0666);
     pid_t childPid;
 
     if ((childPid = fork()) == 0) {

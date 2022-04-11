@@ -10,7 +10,7 @@
 #include <wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#include <sys/file.h>
 void raiseError(char *message);
 void raisePError(char *message);
 #endif //CONSUMER_COMMON_H

@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     while ((len = fread(content, 1, N, file)) > 0) {
         buff[iLen + 1 + len] = '\0';
         sleep(rand() % 2 + 1);
-        write(fifo, buff, N + 10);
+        if (write(fifo, buff, N + 10) == -1) raisePError("write");
         content = &buff[iLen] + 1;
     }
     close(fifo);

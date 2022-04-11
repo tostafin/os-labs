@@ -1,3 +1,62 @@
 Uruchomienie Producenta i Konsumenta w roznych terminalach daje oczekiwany rezultat: programy dzialaja.
 
 Uruchomienie programu runOneConsumerFiveProducers rowniez dziala.
+
+Dla N = 5:
+Running five producers and one consumer:
+./runOneConsumerFiveProducers
+Running tester:
+for number in 1 2 3 4 5 ; do \
+	(./tester ./files/N5/file$number.txt ./files/writeFile.txt $number) ; \
+done
+Line 1 OK.
+Line 2 OK.
+Line 3 OK.
+Line 4 OK.
+Line 5 OK.
+
+Many producers, one consumer:
+for number in 1 2 3 4 5 ; do \
+	(./producer ./pipe $number ./files/N5/file$number.txt 5 &) ; \
+done
+./consumer ./pipe ./files/writeFile.txt 5
+Running tester:
+for number in 1 2 3 4 5 ; do \
+	(./tester ./files/N5/file$number.txt ./files/writeFile.txt $number) ; \
+done
+Line 1 OK.
+Line 2 OK.
+Line 3 OK.
+Line 4 OK.
+Line 5 OK.
+
+One producer, many consumers:
+for number in 1 2 3 4 5 ; do \
+	(./consumer ./pipe ./files/writeFile.txt 5 &) ; \
+done
+./producer ./pipe 1 ./files/N5/file1.txt 5
+Running tester:
+./tester ./files/N5/file1.txt ./files/writeFile.txt 1
+Line 1 not matching the original file!
+
+Many producer, many consumers:
+for number in 1 2 3 4 5 ; do \
+	(./producer ./pipe $number ./files/N5/file$number.txt 5 &) ; \
+done
+for number in 1 2 3 4 ; do \
+	(./consumer ./pipe ./files/writeFile.txt 5 &) ; \
+done
+./consumer ./pipe ./files/writeFile.txt 5
+Running tester:
+for number in 1 2 3 4 5 ; do \
+	(./tester ./files/N5/file$number.txt ./files/writeFile.txt $number) ; \
+done
+Line 1 OK.
+Line 2 not matching the original file!
+Line 3 not matching the original file!
+Line 4 not matching the original file!
+Line 5 not matching the original file!
+
+1.
+2.
+3.

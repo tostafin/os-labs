@@ -22,6 +22,10 @@ int main(int argc, char *argv[]) {
         getline(&copyLine, &len, copyFile);
         ++i;
     }
+    size_t originalLen = strlen(originalLine);
+    if (originalLine[originalLen - 1] == '\n') originalLine[originalLen - 1] = '\0';
+    size_t copyLen = strlen(copyLine);
+    if (copyLine[copyLen - 1] == '\n') copyLine[copyLen - 1] = '\0';
 
     if (strcmp(originalLine, copyLine) == 0) printf("Line %d OK.\n", rowNum);
     else printf("Line %d not matching the original file!\n", rowNum);
