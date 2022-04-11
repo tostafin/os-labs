@@ -5,7 +5,7 @@ N1 = 5
 N2 = 500
 N3 = 5000
 
-all: test
+all: test clean
 
 test: $(OBJS)
 	@make compile_producer_and_consumer --no-print-directory
@@ -13,8 +13,11 @@ test: $(OBJS)
 	@make test_five_producers_one_consumer --no-print-directory
 	@rm -f pipe
 	@mkfifo pipe
+	@printf "Running for N = 5:\n"
 	@make test_n_5 --no-print-directory
+	@printf "Running for N = 500:\n"
 	@make test_n_500 --no-print-directory
+	@printf "Running for N = 5000:\n"
 	@make test_n_5000 --no-print-directory
 
 compile_producer_and_consumer: $(OBJS)

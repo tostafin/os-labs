@@ -3,60 +3,17 @@ Uruchomienie Producenta i Konsumenta w roznych terminalach daje oczekiwany rezul
 Uruchomienie programu runOneConsumerFiveProducers rowniez dziala.
 
 Dla N = 5:
-Running five producers and one consumer:
-./runOneConsumerFiveProducers
-Running tester:
-for number in 1 2 3 4 5 ; do \
-	(./tester ./files/N5/file$number.txt ./files/writeFile.txt $number) ; \
-done
-Line 1 OK.
-Line 2 OK.
-Line 3 OK.
-Line 4 OK.
-Line 5 OK.
+1. wszystko OK.
+2. i 3. czasami niektore linie sa OK, ale rzadko i jest to mniejszosc.
 
-Many producers, one consumer:
-for number in 1 2 3 4 5 ; do \
-	(./producer ./pipe $number ./files/N5/file$number.txt 5 &) ; \
-done
-./consumer ./pipe ./files/writeFile.txt 5
-Running tester:
-for number in 1 2 3 4 5 ; do \
-	(./tester ./files/N5/file$number.txt ./files/writeFile.txt $number) ; \
-done
-Line 1 OK.
-Line 2 OK.
-Line 3 OK.
-Line 4 OK.
-Line 5 OK.
+Dla N = 500
+1. wszystko OK.
+2. i 3. czasami niektore linie sa OK, ale rzadko i jest to mniejszosc.
 
-One producer, many consumers:
-for number in 1 2 3 4 5 ; do \
-	(./consumer ./pipe ./files/writeFile.txt 5 &) ; \
-done
-./producer ./pipe 1 ./files/N5/file1.txt 5
-Running tester:
-./tester ./files/N5/file1.txt ./files/writeFile.txt 1
-Line 1 not matching the original file!
+Dla N = 5000
+1. 2. i 3. wszystko zle.
 
-Many producer, many consumers:
-for number in 1 2 3 4 5 ; do \
-	(./producer ./pipe $number ./files/N5/file$number.txt 5 &) ; \
-done
-for number in 1 2 3 4 ; do \
-	(./consumer ./pipe ./files/writeFile.txt 5 &) ; \
-done
-./consumer ./pipe ./files/writeFile.txt 5
-Running tester:
-for number in 1 2 3 4 5 ; do \
-	(./tester ./files/N5/file$number.txt ./files/writeFile.txt $number) ; \
-done
-Line 1 OK.
-Line 2 not matching the original file!
-Line 3 not matching the original file!
-Line 4 not matching the original file!
-Line 5 not matching the original file!
-
-1.
-2.
-3.
+Wyniki nie sa wiec zaskoczeniem. Poki mamy tylko jednego konsumenta i nie przekraczamy wartosci PIPE_BUF, to mozemy
+liczyc na poprawne wyniki. Gdy jednak dolozymy konsumentow, to tylko niektore linie sa OK. Jednak dla N > PIPE_BUF nawet
+przy jednym konsumencie nie ma co liczyc na jakakolwiek dobra odpowiedz. Potwierdza to tylko teorie, ze dla operacji
+odczytu nie mamy jakiejkolwiek gwarancji, ze beda one atomiczne dla wiecej niz dwoch procesow.
