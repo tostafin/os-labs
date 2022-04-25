@@ -43,6 +43,29 @@ void receiveStopFromClient(int clientId) {
     --numOfClients;
 }
 
+void handleList(void) {
+    puts("List of available Clients:");
+    for (int i = 0; i < MAX_CLIENTS; ++i) {
+        if (clients[i][0] != -1) printf("Client id %d\n", i);
+    }
+}
+
+void handleToAll(void) {
+    puts("Received the 2ALL communicate.");
+    msgBuf.mtype = TO_ALL;
+    strcat(msgBuf.mtext, ", ");
+    time_t myTime = time(NULL);
+    char *timeStr = ctime(&myTime);
+    strcat(msgBuf.mtext, timeStr);
+    int senderId = msgBuf.id;
+    for (int i = 0; i < MAX_CLIENTS; ++i) {
+        if (i != senderId) {
+            msgBuf.id = i;
+            sendMsgToQueue(clients[i][1], &msgBuf);
+        }
+    }
+}
+
 void writeToFile(FILE *file) {
     time_t myTime = time(NULL);
     char *timeStr = ctime(&myTime);
@@ -71,8 +94,10 @@ void receiveCommunicates(void) {
                     if (numOfClients == 0) return; // breaks the while loop
                     else break;
                 case LIST:
+                    handleList();
                     break;
                 case TO_ALL:
+                    handleToAll();
                     break;
                 case TO_ONE:
                     break;

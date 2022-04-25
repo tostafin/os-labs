@@ -1,4 +1,3 @@
-#include <fcntl.h>
 #include "client.h"
 
 MsgQueue *msgQueue;
@@ -40,11 +39,29 @@ MsgType getMsgType(char *communicate) {
     return 0;
 }
 
-void handleStop() {
+void handleStop(void) {
     msgBuf.mtype = STOP;
     strcpy(msgBuf.mtext, "STOP");
     msgBuf.id = myId;
     sendMsgToQueue(serverQueueId, &msgBuf);
+}
+
+void handleList(void) {
+    msgBuf.mtype = LIST;
+    msgBuf.id = myId;
+    strcpy(msgBuf.mtext, "LIST");
+    sendMsgToQueue(serverQueueId, &msgBuf);
+}
+
+void handleToAll(char *argv) {
+    msgBuf.mtype = TO_ALL;
+    msgBuf.id = myId;
+    strcpy(msgBuf.mtext, argv);
+    sendMsgToQueue(serverQueueId, &msgBuf);
+}
+
+void receiveToAll(void) {
+    printf("Received from the 2ALL communicate: %s", msgBuf.mtext);
 }
 
 void SIGINTHandler(int sigNum) {
@@ -56,11 +73,12 @@ void SIGINTHandler(int sigNum) {
 void sendCommunicates(char communicate[]) {
     signal(SIGINT, SIGINTHandler);
 
-    scanf("%s", communicate);
-    char *token = strtok(communicate, " "); // TODO: split later
+    fgets(communicate, 100, stdin);
+    char *token = strtok(communicate, " ");
 
     if (token != NULL) {
-        MsgType msgType = getMsgType(token);
+        if (communicate[strlen(communicate) - 1] == '\n') communicate[strlen(communicate) - 1] = '\0';
+        MsgType msgType = getMsgType(communicate);
 
         switch (msgType) {
             case STOP:
@@ -68,8 +86,13 @@ void sendCommunicates(char communicate[]) {
                 stop = true;
                 return;
             case LIST:
+                handleList();
                 break;
             case TO_ALL:
+                token = strtok(NULL, " ");
+                if (token == NULL) printf("2ALL must contain a string as a parameter.");
+                if (token[strlen(token) - 1] == '\n') token[strlen(token) - 1] = '\0';
+                handleToAll(token);
                 break;
             case TO_ONE:
                 break;
@@ -77,6 +100,7 @@ void sendCommunicates(char communicate[]) {
                 puts("Client already sent the INIT communicate.");
                 break;
         }
+        communicate[0] = '\0';
     }
 }
 
@@ -96,6 +120,7 @@ void receiveCommunicates() {
             case LIST:
                 break;
             case TO_ALL:
+                receiveToAll();
                 break;
             case TO_ONE:
                 break;
