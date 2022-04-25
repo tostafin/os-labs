@@ -52,7 +52,6 @@ void handleList(void) {
 
 void handleToAll(void) {
     puts("Received the 2ALL communicate.");
-    msgBuf.mtype = TO_ALL;
     strcat(msgBuf.mtext, ", ");
     time_t myTime = time(NULL);
     char *timeStr = ctime(&myTime);
@@ -64,6 +63,22 @@ void handleToAll(void) {
             sendMsgToQueue(clients[i][1], &msgBuf);
         }
     }
+}
+
+void handleToOne(void) {
+    puts("Received the 2ONE communicate.");
+    char *string;
+    int clientId = (int) strtol(msgBuf.mtext, &string, 10);
+    if (clientId > MAX_CLIENTS) puts("No Client with such ID.");
+    else if (clients[clientId][0] == -1) puts("Client with such ID is inactive.");
+
+    strcpy(msgBuf.mtext, string);
+    strcat(msgBuf.mtext, ", ");
+    time_t myTime = time(NULL);
+    char *timeStr = ctime(&myTime);
+    strcat(msgBuf.mtext, timeStr);
+    msgBuf.id = clientId;
+    sendMsgToQueue(clients[clientId][1], &msgBuf);
 }
 
 void writeToFile(FILE *file) {
@@ -100,6 +115,7 @@ void receiveCommunicates(void) {
                     handleToAll();
                     break;
                 case TO_ONE:
+                    handleToOne();
                     break;
                 case INIT:
                     handleInit(clientQueueKey);

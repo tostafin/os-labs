@@ -60,8 +60,19 @@ void handleToAll(char *argv) {
     sendMsgToQueue(serverQueueId, &msgBuf);
 }
 
+void handleToOne(char *argv) {
+    msgBuf.mtype = TO_ONE;
+    msgBuf.id = myId;
+    strcpy(msgBuf.mtext, argv);
+    sendMsgToQueue(serverQueueId, &msgBuf);
+}
+
 void receiveToAll(void) {
     printf("Received from the 2ALL communicate: %s", msgBuf.mtext);
+}
+
+void receiveToOne(void) {
+    printf("Received from the 2ONE communicate: %s", msgBuf.mtext);
 }
 
 void SIGINTHandler(int sigNum) {
@@ -90,11 +101,29 @@ void sendCommunicates(char communicate[]) {
                 break;
             case TO_ALL:
                 token = strtok(NULL, " ");
-                if (token == NULL) printf("2ALL must contain a string as a parameter.");
+                if (token == NULL) {
+                    printf("2ALL must contain a string as a parameter.");
+                    break;
+                }
                 if (token[strlen(token) - 1] == '\n') token[strlen(token) - 1] = '\0';
                 handleToAll(token);
                 break;
             case TO_ONE:
+                ;char argv[100];
+                token = strtok(NULL, " ");
+                if (token == NULL) {
+                    printf("2ONE must contain two parameters.");
+                    break;
+                }
+                strcpy(argv, token);
+                token = strtok(NULL, " ");
+                if (token == NULL) {
+                    printf("2ONE must contain two parameters.");
+                    break;
+                }
+                strcat(argv, token);
+                if (argv[strlen(argv) - 1] == '\n') argv[strlen(argv) - 1] = '\0';
+                handleToOne(argv);
                 break;
             case INIT:
                 puts("Client already sent the INIT communicate.");
@@ -123,6 +152,7 @@ void receiveCommunicates() {
                 receiveToAll();
                 break;
             case TO_ONE:
+                receiveToOne();
                 break;
             case INIT:
                 puts("Client already received the INIT communicate.");

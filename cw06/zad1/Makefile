@@ -2,10 +2,7 @@ CC = gcc
 CFLAGS = -Wall
 OBJS = server.o client.o common.o
 
-all: ipcrm compile clean
-
-ipcrm:
-	@ipcrm --all=msg
+all: compile clean
 
 compile: $(OBJS)
 	@$(CC) $(CFLAGS) server.o common.o -o server
