@@ -1,9 +1,11 @@
+#include <fcntl.h>
 #include "client.h"
 
 MsgQueue *msgQueue;
 int serverQueueId;
 int myId;
 msgbuf msgBuf;
+volatile bool stop = false;
 
 void cleanAtExit(void) {
     removeQueue(msgQueue->id);
@@ -35,8 +37,7 @@ MsgType getMsgType(char *communicate) {
     if (strcmp(communicate, "2ALL") == 0) return TO_ALL;
     if (strcmp(communicate, "2ONE") == 0) return TO_ONE;
     if (strcmp(communicate, "INIT") == 0) return INIT;
-    raiseError("Wrong communicate passed");
-    return EXIT_FAILURE;
+    return 0;
 }
 
 void handleStop() {
@@ -52,19 +53,45 @@ void SIGINTHandler(int sigNum) {
     exit(EXIT_SUCCESS);
 }
 
-void handleCommunicates(void) {
+void sendCommunicates(char communicate[]) {
     signal(SIGINT, SIGINTHandler);
 
-    while (true) {
-        char communicate[100];
-        puts("Pass a communicate and its arguments (if needed):");
-        scanf("%s", communicate);
-        char *token = strtok(communicate, " "); // TODO: split later
+    scanf("%s", communicate);
+    char *token = strtok(communicate, " "); // TODO: split later
+
+    if (token != NULL) {
         MsgType msgType = getMsgType(token);
 
         switch (msgType) {
             case STOP:
                 handleStop();
+                stop = true;
+                return;
+            case LIST:
+                break;
+            case TO_ALL:
+                break;
+            case TO_ONE:
+                break;
+            case INIT:
+                puts("Client already sent the INIT communicate.");
+                break;
+        }
+    }
+}
+
+void receiveCommunicates() {
+    if (msgrcv(msgQueue->id, &msgBuf, MAX_MSG_SIZE, -5, IPC_NOWAIT) == -1) {
+        if (errno != ENOMSG) {
+            cleanAtExit();
+            raisePError("msgrcv");
+        }
+    } else {
+        switch (msgBuf.mtype) {
+            case STOP:
+                puts("Client received the STOP communicate from Server.");
+                handleStop();
+                stop = true;
                 return;
             case LIST:
                 break;
@@ -80,6 +107,7 @@ void handleCommunicates(void) {
 }
 
 int main(void) {
+    fcntl(STDIN_FILENO, F_SETFL, FNDELAY);
     puts("Client running...");
     printf("My PID: %d\n", getpid());
     msgQueue = createMsgQueue('c');
@@ -92,7 +120,13 @@ int main(void) {
 
     handleInit();
     puts("Client received the INIT communicate.");
-    handleCommunicates();
+
+    char communicate[100];
+    communicate[0] = '\0';
+    while (!stop) {
+        receiveCommunicates();
+        sendCommunicates(communicate);
+    }
 
     return 0;
 }
