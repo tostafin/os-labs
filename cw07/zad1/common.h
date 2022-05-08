@@ -2,6 +2,10 @@
 #define COMMON_H
 
 #define OVEN_AND_TABLE_SIZE 5
+#define OVEN_PROJ_ID 'O'
+#define TABLE_PROJ_ID 'T'
+#define MAX_N (1<<15) - 1 //max value of any semaphore
+#define MAX_M (1<<15) - 1 //max value of any semaphore
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +14,7 @@
 #include <sys/shm.h>
 #include <unistd.h>
 #include <signal.h>
+#include <wait.h>
 
 union semun {
     int              val;    /* Value for SETVAL */
@@ -31,5 +36,6 @@ typedef struct table {
 
 void raisePError(const char *message);
 void raiseError(const char *message);
+int getSharedMemId(int projId);
 
 #endif //COMMON_H

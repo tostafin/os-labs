@@ -1,21 +1,20 @@
 #include "common.h"
 
+int N;
+int M;
+
 int semId;
 int ovenId;
 int tableId;
-
-Oven *oven;
-Table *table;
+pid_t cooksPids[MAX_N];
+pid_t suppliersPids[MAX_M];
 
 void SIGINTHandler(int sigNum) {
-    if (semctl(semId, 0, IPC_RMID) == -1) raisePError("semctl");
+    for (int i = 0; i < N; ++i) kill(cooksPids[i], SIGINT);
+    for (int i = 0; i < M; ++i) kill(suppliersPids[i], SIGINT);
+    while (wait(NULL) > 0);
 
-    if (oven != NULL) {
-        if (shmdt(oven) == -1) raisePError("shmdt");
-    }
-    if (table != NULL) {
-        if (shmdt(table) == -1) raisePError("shmdt");
-    }
+    if (semctl(semId, 0, IPC_RMID) == -1) raisePError("semctl");
 
     shmctl(ovenId, IPC_RMID, NULL);
     shmctl(tableId, IPC_RMID, NULL);
@@ -24,12 +23,14 @@ void SIGINTHandler(int sigNum) {
     exit(EXIT_SUCCESS);
 }
 
-void parseArgv(int argc, char *argv[], int *N, int *M) {
+void parseArgv(int argc, char *argv[]) {
     if (argc != 3) raiseError("You must pass exactly two arguments: N and M.");
-    *N = (int) strtol(argv[1], NULL, 10);
-    if (*N <= 0) raiseError("N must be a positive integer.");
-    *M = (int) strtol(argv[2], NULL, 10);
-    if (*M <= 0) raiseError("M must be a positive integer.");
+    N = (int) strtol(argv[1], NULL, 10);
+    if (N <= 0) raiseError("N must be a positive integer.");
+    if (N >= 1<<15) raiseError("N must be less than 2^15");
+    M = (int) strtol(argv[2], NULL, 10);
+    if (M <= 0) raiseError("M must be a positive integer.");
+    if (M >= 1<<15) raiseError("M must be less than 2^15");
 }
 
 int createSemaphores(void) {
@@ -50,21 +51,53 @@ int createSharedMemSeg(int projId) {
     key_t key = ftok(getenv("HOME"), projId);
     if (key == -1) raisePError("ftok");
 
-    int id = shmget(key, sizeof(Oven), IPC_CREAT | IPC_EXCL | 0600);
+    size_t size = projId == OVEN_PROJ_ID ? sizeof(Oven) : sizeof(Table);
+
+    int id = shmget(key, size, IPC_CREAT | IPC_EXCL | 0600);
     if (id == -1) raisePError("shmget");
 
     return id;
 }
 
+void createCooks(void) {
+    pid_t childPid;
+    for (int i = 0; i < N; ++i) {
+        if ((childPid = fork()) == -1) {
+            raisePError("fork");
+        } else if (childPid == 0) {
+            cooksPids[i] = getpid();
+            execl("./cook", "cook", NULL);
+            raisePError("execl");
+        }
+    }
+}
+
+void createSuppliers(void) {
+    pid_t childPid;
+    for (int i = 0; i < M; ++i) {
+        if ((childPid = fork()) == -1) {
+            raisePError("fork");
+        } else if (childPid == 0) {
+            suppliersPids[i] = getpid();
+            execl("./supplier", "supplier", NULL);
+            raisePError("execl");
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
-    int N, M;
-    parseArgv(argc, argv, &N, &M);
+    parseArgv(argc, argv);
 
     semId = createSemaphores();
-    ovenId = createSharedMemSeg('O'); //for the oven
-    tableId = createSharedMemSeg('T'); //for the table
+    ovenId = createSharedMemSeg(OVEN_PROJ_ID); //for the oven
+    tableId = createSharedMemSeg(TABLE_PROJ_ID); //for the table
 
     signal(SIGINT, SIGINTHandler);
+
+    createCooks();
+    createSuppliers();
+
+    while (1);
 
     return 0;
 }
