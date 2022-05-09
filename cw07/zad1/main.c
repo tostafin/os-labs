@@ -7,8 +7,8 @@ int N;
 int M;
 
 int semId;
-int ovenId;
-int tableId;
+int ovenShmId;
+int tableShmId;
 pid_t cooksPids[MAX_N];
 pid_t suppliersPids[MAX_M];
 
@@ -19,8 +19,8 @@ void SIGINTHandler(int sigNum) {
 
     if (semctl(semId, 0, IPC_RMID) == -1) raisePError("semctl");
 
-    shmctl(ovenId, IPC_RMID, NULL);
-    shmctl(tableId, IPC_RMID, NULL);
+    shmctl(ovenShmId, IPC_RMID, NULL);
+    shmctl(tableShmId, IPC_RMID, NULL);
 
     puts("\nPizzeria konczy prace.");
     exit(EXIT_SUCCESS);
@@ -67,6 +67,22 @@ void prepOvenAndTable(void) {
         oven->place[i] = -1;
         table->place[i] = -1;
     }
+    oven->nextIdx = 0;
+    table->nextIdx = 0;
+}
+
+void setupIPC(void) {
+    semId = createSemaphores();
+
+    ovenShmId = createSharedMemSeg(OVEN_PROJ_ID);
+    tableShmId = createSharedMemSeg(TABLE_PROJ_ID);
+
+    oven = (Oven *) shmat(ovenShmId, NULL, 0);
+    if (oven == (void *) -1) raisePError("shmat");
+    table = (Table *) shmat(tableShmId, NULL, 0);
+    if (table == (void *) -1) raisePError("shmat");
+
+    prepOvenAndTable();
 }
 
 void createCooks(void) {
@@ -98,15 +114,7 @@ void createSuppliers(void) {
 int main(int argc, char *argv[]) {
     parseArgv(argc, argv);
 
-    semId = createSemaphores();
-    ovenId = createSharedMemSeg(OVEN_PROJ_ID); //for the oven
-    tableId = createSharedMemSeg(TABLE_PROJ_ID); //for the table
-    oven = (Oven *) shmat(ovenId, NULL, 0);
-    if (oven == (void *) -1) raisePError("shmat");
-    table = (Table *) shmat(tableId, NULL, 0);
-    if (table == (void *) -1) raisePError("shmat");
-
-    prepOvenAndTable();
+    setupIPC();
 
     signal(SIGINT, SIGINTHandler);
 

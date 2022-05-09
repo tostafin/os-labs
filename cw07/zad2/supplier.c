@@ -9,6 +9,13 @@ void SIGINTHandler(int sigNum) {
     exit(EXIT_SUCCESS);
 }
 
+void setupIPC(sem_t **tableSem) {
+    *tableSem = getSemaphoreAddress(TABLE_SEM_NAME);
+
+    table = (Table *) mmap(NULL, sizeof(Table), PROT_READ | PROT_WRITE, MAP_SHARED, getSharedMemDesc(TABLE_SHM_NAME), 0);
+    if (table == MAP_FAILED) raisePError("mmap");
+}
+
 void deliverPizza(pid_t pid, sem_t *tableSem) {
     if (sem_wait(tableSem) == -1) raisePError("sem_wait");
 
@@ -39,12 +46,10 @@ void handleDelivering(sem_t *tableSem) {
 }
 
 int main(void) {
+    sem_t *tableSem;
+    setupIPC(&tableSem);
+
     signal(SIGINT, SIGINTHandler);
-
-    sem_t *tableSem = getSemaphoreAddress(TABLE_SEM_NAME);
-
-    table = (Table *) mmap(NULL, sizeof(Table), PROT_READ | PROT_WRITE, MAP_SHARED, getSharedMemDesc(TABLE_SHM_NAME), 0);
-    if (table == MAP_FAILED) raisePError("mmap");
 
     handleDelivering(tableSem);
 

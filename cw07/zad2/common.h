@@ -2,8 +2,6 @@
 #define COMMON_H
 
 #define OVEN_AND_TABLE_SIZE 5
-//#define OVEN_PROJ_ID 'O'
-//#define TABLE_PROJ_ID 'T'
 #define MAX_N (1<<15) - 1 //max value of any semaphore
 #define MAX_M (1<<15) - 1 //max value of any semaphore
 #define OVEN_SEM_NAME "/posixOvenSemName"
@@ -38,11 +36,6 @@ typedef struct table {
     int place[OVEN_AND_TABLE_SIZE];
     int nextIdx;
 } Table;
-
-enum places {
-    OVEN,
-    TABLE
-};
 
 void raisePError(const char *message);
 void raiseError(const char *message);

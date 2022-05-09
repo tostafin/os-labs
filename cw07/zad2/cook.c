@@ -13,6 +13,16 @@ void SIGINTHandler(int sigNum) {
     exit(EXIT_SUCCESS);
 }
 
+void setupIPC(sem_t **ovenSem, sem_t **tableSem) {
+    *ovenSem = getSemaphoreAddress(OVEN_SEM_NAME);
+    *tableSem = getSemaphoreAddress(TABLE_SEM_NAME);
+
+    oven = (Oven *) mmap(NULL, sizeof(Oven), PROT_READ | PROT_WRITE, MAP_SHARED, getSharedMemDesc(OVEN_SHM_NAME), 0);
+    if (oven == MAP_FAILED) raisePError("mmap");
+    table = (Table *) mmap(NULL, sizeof(Table), PROT_READ | PROT_WRITE, MAP_SHARED, getSharedMemDesc(TABLE_SHM_NAME), 0);
+    if (table == MAP_FAILED) raisePError("mmap");
+}
+
 int getNumOfPizzasInOven(void) {
     int m = 0;
     for (int i = 0; i < OVEN_AND_TABLE_SIZE; ++i) {
@@ -89,15 +99,10 @@ void handleCooking(sem_t *ovenSem, sem_t *tableSem) {
 }
 
 int main(void) {
+    sem_t *ovenSem, *tableSem;
+    setupIPC(&ovenSem, &tableSem);
+
     signal(SIGINT, SIGINTHandler);
-
-    sem_t *ovenSem = getSemaphoreAddress(OVEN_SEM_NAME);
-    sem_t *tableSem = getSemaphoreAddress(TABLE_SEM_NAME);
-
-    oven = (Oven *) mmap(NULL, sizeof(Oven), PROT_READ | PROT_WRITE, MAP_SHARED, getSharedMemDesc(OVEN_SHM_NAME), 0);
-    if (oven == MAP_FAILED) raisePError("mmap");
-    table = (Table *) mmap(NULL, sizeof(Table), PROT_READ | PROT_WRITE, MAP_SHARED, getSharedMemDesc(TABLE_SHM_NAME), 0);
-    if (table == MAP_FAILED) raisePError("mmap");
 
     handleCooking(ovenSem, tableSem);
 

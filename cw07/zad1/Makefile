@@ -22,11 +22,4 @@ common.o: common.c
 	$(CC) $(CFLAGS) -c common.c
 
 clean:
-	rm -rf $(OBJS)
-
-cle:
-	rm -rf main cook supplier
-
-clmem:
-	ipcrm --all=shm
-	ipcrm --all=sem
+	rm -f $(OBJS)

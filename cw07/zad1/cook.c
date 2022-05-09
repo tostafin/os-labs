@@ -13,6 +13,14 @@ void SIGINTHandler(int sigNum) {
     exit(EXIT_SUCCESS);
 }
 
+void setupIPC(int *semId) {
+    *semId = getSemaphoreId();
+    oven = (Oven *) shmat(getSharedMemId(OVEN_PROJ_ID), NULL, 0600);
+    if (oven == (void *) -1) raisePError("shmat");
+    table = (Table *) shmat(getSharedMemId(TABLE_PROJ_ID), NULL, 0600);
+    if (table == (void *) -1) raisePError("shmat");
+}
+
 int getNumOfPizzasInOven(void) {
     int m = 0;
     for (int i = 0; i < OVEN_AND_TABLE_SIZE; ++i) {
@@ -97,6 +105,7 @@ void handleCooking(int semId) {
     printf("Kucharz %d zaczyna pichcic.\n", pid);
     srand(pid);
     struct sembuf sb;
+    sb.sem_flg = 0;
     int currIdx;
     while (true) {
         int n = getRandInt(0, 9);
@@ -109,13 +118,10 @@ void handleCooking(int semId) {
 }
 
 int main(void) {
-    signal(SIGINT, SIGINTHandler);
+    int semId;
+    setupIPC(&semId);
 
-    int semId = getSemaphoreId();
-    oven = (Oven *) shmat(getSharedMemId(OVEN_PROJ_ID), NULL, 0600);
-    if (oven == (void *) -1) raisePError("shmat");
-    table = (Table *) shmat(getSharedMemId(TABLE_PROJ_ID), NULL, 0600);
-    if (table == (void *) -1) raisePError("shmat");
+    signal(SIGINT, SIGINTHandler);
 
     handleCooking(semId);
 

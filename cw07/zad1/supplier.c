@@ -1,16 +1,18 @@
 #include "common.h"
 
-Oven *oven;
 Table *table;
 
 void SIGINTHandler(int sigNum) {
-    if (oven != NULL) {
-        if (shmdt(oven) == -1) raisePError("shmdt");
-    }
     if (table != NULL) {
         if (shmdt(table) == -1) raisePError("shmdt");
     }
     exit(EXIT_SUCCESS);
+}
+
+void setupIPC(int *semId) {
+    *semId = getSemaphoreId();
+    table = (Table *) shmat(getSharedMemId(TABLE_PROJ_ID), NULL, 0600);
+    if (table == (void *) -1) raisePError("shmat");
 }
 
 void deliverPizza(pid_t pid, int semId, struct sembuf *sb) {
@@ -46,17 +48,15 @@ void handleDelivering(int semId) {
     pid_t pid = getpid();
     printf("Dostawca %d zaczyna rozwozic.\n", pid);
     struct sembuf sb;
+    sb.sem_flg = 0;
     while (true) deliverPizza(pid, semId, &sb);
 }
 
 int main(void) {
-    signal(SIGINT, SIGINTHandler);
+    int semId;
+    setupIPC(&semId);
 
-    int semId = getSemaphoreId();
-    oven = (Oven *) shmat(getSharedMemId(OVEN_PROJ_ID), NULL, 0600);
-    if (oven == (void *) -1) raisePError("shmat");
-    table = (Table *) shmat(getSharedMemId(TABLE_PROJ_ID), NULL, 0600);
-    if (table == (void *) -1) raisePError("shmat");
+    signal(SIGINT, SIGINTHandler);
 
     handleDelivering(semId);
 

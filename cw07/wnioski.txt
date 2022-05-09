@@ -1,0 +1,3 @@
+- Dla N, M < 5 program dziala poprawnie --- liczba pizz nie przekracza rozmiarow tablic i zadna tablica nie jest modyfikowana przez kilka procesow jednoczsnie
+- Dla N, M > 5 program rowniez dziala poprawnie, co wskazuje, ze wykorzstanie semaforow i pamieci wspolnej jest w stanie nam zagwarantowac odpowiednia wymiane danych pomiedzy procesami oraz ich synchronizacje niezaleznie od liczby procesow
+- Ze wzgledu na to, ze uruchamiamy procesy potomne w petli, warto uzyc funkcji getpid() zamiast time(NULL), generujac seed dla funkcji rand(), gdyz uzywajac tego drugiego, mozemy wygenerowac dokladnie ten sam dla kazdego z procesow, przez co bedziemy losowac bardzo czesto ten sam rodzaj pizzy

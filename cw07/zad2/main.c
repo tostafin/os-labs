@@ -65,6 +65,22 @@ void prepOvenAndTable(void) {
     table->nextIdx = 0;
 }
 
+void setupIPC(void) {
+    ovenSem = createSemaphores(OVEN_SEM_NAME);
+    tableSem = createSemaphores(TABLE_SEM_NAME);
+
+    ovenId = createSharedMemSeg(OVEN_SHM_NAME);
+    ftruncate(ovenId, sizeof(Oven));
+    tableId = createSharedMemSeg(TABLE_SHM_NAME);
+    ftruncate(tableId, sizeof(Table));
+    oven = (Oven *) mmap(NULL, sizeof(Oven), PROT_READ | PROT_WRITE, MAP_SHARED, ovenId, 0);
+    if (oven == MAP_FAILED) raisePError("mmap");
+    table = (Table *) mmap(NULL, sizeof(Table), PROT_READ | PROT_WRITE, MAP_SHARED, tableId, 0);
+    if (table == MAP_FAILED) raisePError("mmap");
+
+    prepOvenAndTable();
+}
+
 void createCooks(void) {
     pid_t childPid;
     for (int i = 0; i < N; ++i) {
@@ -94,19 +110,7 @@ void createSuppliers(void) {
 int main(int argc, char *argv[]) {
     parseArgv(argc, argv);
 
-    ovenSem = createSemaphores(OVEN_SEM_NAME);
-    tableSem = createSemaphores(TABLE_SEM_NAME);
-
-    ovenId = createSharedMemSeg(OVEN_SHM_NAME); //for the oven
-    ftruncate(ovenId, sizeof(Oven));
-    tableId = createSharedMemSeg(TABLE_SHM_NAME); //for the table
-    ftruncate(tableId, sizeof(Table));
-    oven = (Oven *) mmap(NULL, sizeof(Oven), PROT_READ | PROT_WRITE, MAP_SHARED, ovenId, 0);
-    if (oven == MAP_FAILED) raisePError("mmap");
-    table = (Table *) mmap(NULL, sizeof(Table), PROT_READ | PROT_WRITE, MAP_SHARED, tableId, 0);
-    if (table == MAP_FAILED) raisePError("mmap");
-
-    prepOvenAndTable();
+    setupIPC();
 
     signal(SIGINT, SIGINTHandler);
 
