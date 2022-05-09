@@ -13,13 +13,50 @@ void SIGINTHandler(int sigNum) {
     exit(EXIT_SUCCESS);
 }
 
+void deliverPizza(pid_t pid, int semId, struct sembuf *sb) {
+    sb->sem_num = TABLE;
+    sb->sem_op = -1;
+    semop(semId, sb, 1);
+
+    int pizzaIdx = -1;
+    int k = getNumOfPizzasOnTable(&pizzaIdx, table);
+    if (k != 0) {
+        int n = table->place[pizzaIdx];
+        --k;
+        printf("(%d %s) Pobieram pizze: %d. Liczba pizz na stole: %d.\n", pid, getTimestamp(), n, k);
+        table->place[pizzaIdx] = -1;
+
+        sb->sem_num = TABLE;
+        sb->sem_op = 1;
+        semop(semId, sb, 1);
+
+        sleep(getRandInt(4, 6));
+
+        printf("(%d %s) Dostarczam pizze: %d.\n", pid, getTimestamp(), n);
+
+        sleep(getRandInt(4, 6));
+    } else {
+        sb->sem_num = TABLE;
+        sb->sem_op = 1;
+        semop(semId, sb, 1);
+    }
+}
+
+void handleDelivering(int semId) {
+    pid_t pid = getpid();
+    printf("Dostawca %d zaczyna rozwozic.\n", pid);
+    struct sembuf sb;
+    while (true) deliverPizza(pid, semId, &sb);
+}
+
 int main(void) {
     signal(SIGINT, SIGINTHandler);
 
-    oven = shmat(getSharedMemId(OVEN_PROJ_ID), NULL, 0600);
-    table = shmat(getSharedMemId(TABLE_PROJ_ID), NULL, 0600);
+    int semId = getSemaphoreId();
+    oven = (Oven *) shmat(getSharedMemId(OVEN_PROJ_ID), NULL, 0600);
+    table = (Table *) shmat(getSharedMemId(TABLE_PROJ_ID), NULL, 0600);
 
-    while (1);
+    handleDelivering(semId);
 
     return 0;
 }

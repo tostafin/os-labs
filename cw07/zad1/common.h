@@ -15,6 +15,11 @@
 #include <unistd.h>
 #include <signal.h>
 #include <wait.h>
+#include <inttypes.h>
+#include <math.h>
+#include <time.h>
+#include <stdbool.h>
+#include <assert.h>
 
 union semun {
     int              val;    /* Value for SETVAL */
@@ -34,8 +39,17 @@ typedef struct table {
     int nextIdx;
 } Table;
 
+enum places {
+    OVEN,
+    TABLE
+};
+
 void raisePError(const char *message);
 void raiseError(const char *message);
+int getSemaphoreId(void);
 int getSharedMemId(int projId);
+char *getTimestamp(void);
+int getRandInt(int left, int right);
+int getNumOfPizzasOnTable(int *idx, Table *table);
 
 #endif //COMMON_H

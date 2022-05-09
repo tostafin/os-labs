@@ -1,5 +1,8 @@
 #include "common.h"
 
+Oven *oven;
+Table *table;
+
 int N;
 int M;
 
@@ -34,7 +37,7 @@ void parseArgv(int argc, char *argv[]) {
 }
 
 int createSemaphores(void) {
-    key_t key = ftok(getenv("HOME"), getpid());
+    key_t key = ftok(getenv("HOME"), 'S');
     if (key == -1) raisePError("ftok");
 
     int id = semget(key, 2, IPC_CREAT | IPC_EXCL | 0600);
@@ -57,6 +60,13 @@ int createSharedMemSeg(int projId) {
     if (id == -1) raisePError("shmget");
 
     return id;
+}
+
+void prepOvenAndTable(void) {
+    for (int i = 0; i < OVEN_AND_TABLE_SIZE; ++i) {
+        oven->place[i] = -1;
+        table->place[i] = -1;
+    }
 }
 
 void createCooks(void) {
@@ -91,13 +101,17 @@ int main(int argc, char *argv[]) {
     semId = createSemaphores();
     ovenId = createSharedMemSeg(OVEN_PROJ_ID); //for the oven
     tableId = createSharedMemSeg(TABLE_PROJ_ID); //for the table
+    oven = (Oven *) shmat(ovenId, NULL, 0);
+    table = (Table *) shmat(tableId, NULL, 0);
+
+    prepOvenAndTable();
 
     signal(SIGINT, SIGINTHandler);
 
     createCooks();
     createSuppliers();
 
-    while (1);
+    while (wait(NULL) > 0);
 
     return 0;
 }

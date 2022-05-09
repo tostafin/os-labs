@@ -5,9 +5,9 @@ OBJS = main.o cook.o supplier.o common.o
 all: compile clean
 
 compile: $(OBJS)
-	$(CC) $(CFLAGS) main.o common.o -o main
-	$(CC) $(CFLAGS) cook.o common.o -o cook
-	$(CC) $(CFLAGS) supplier.o common.o -o supplier
+	$(CC) $(CFLAGS) main.o common.o -o main -lm
+	$(CC) $(CFLAGS) cook.o common.o -o cook -lm
+	$(CC) $(CFLAGS) supplier.o common.o -o supplier -lm
 
 main.o: main.c
 	$(CC) $(CFLAGS) -c main.c
@@ -26,3 +26,7 @@ clean:
 
 cle:
 	@rm -rf main cook supplier
+
+clmem:
+	@ipcrm --all=shm
+	@ipcrm --all=sem
