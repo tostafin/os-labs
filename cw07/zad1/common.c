@@ -47,36 +47,10 @@ char *getTimestamp(void) {
 
     sprintf(timeStr, "%"PRIdMAX".%03ld seconds", (intmax_t) s, ms);
     return timeStr;
-
-//    printf("%"PRIdMAX".%03ld seconds\n",
-//           (intmax_t) s, ms);
 }
 
-int getRandInt(int left, int right) { //right is exclusive
-    /* Returns an integer in the range [left, right).
- *
- * Uses rand(), and so is affected-by/affects the same seed.
- */
-    if ((right - 1) == RAND_MAX) {
-        return rand();
-    } else {
-        // Supporting larger values for n would requires an even more
-        // elaborate implementation that combines multiple calls to rand()
-        assert(right <= RAND_MAX);
-
-        // Chop off all the values that would cause skew...
-        int end = RAND_MAX / right; // truncate skew
-        assert(end > 0);
-        end *= right;
-
-        // ... and ignore results from rand() that fall above that limit.
-        // (Worst case the loop condition should succeed 50% of the time,
-        // so we can expect to bail out of this loop pretty quickly.)
-        int r;
-        while ((r = rand()) >= end);
-
-        return (r % right) + left;
-    }
+int getRandInt(int minNum, int maxNum) { //both are inclusive
+    return rand() % (maxNum + 1 - minNum) + minNum;
 }
 
 int getNumOfPizzasOnTable(int *idx, Table *table) {

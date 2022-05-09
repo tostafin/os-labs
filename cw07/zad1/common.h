@@ -49,7 +49,7 @@ void raiseError(const char *message);
 int getSemaphoreId(void);
 int getSharedMemId(int projId);
 char *getTimestamp(void);
-int getRandInt(int left, int right);
+int getRandInt(int minNum, int maxNum);
 int getNumOfPizzasOnTable(int *idx, Table *table);
 
 #endif //COMMON_H

@@ -30,11 +30,11 @@ void deliverPizza(pid_t pid, int semId, struct sembuf *sb) {
         sb->sem_op = 1;
         semop(semId, sb, 1);
 
-        sleep(getRandInt(4, 6));
+        sleep(getRandInt(4, 5));
 
         printf("(%d %s) Dostarczam pizze: %d.\n", pid, getTimestamp(), n);
 
-        sleep(getRandInt(4, 6));
+        sleep(getRandInt(4, 5));
     } else {
         sb->sem_num = TABLE;
         sb->sem_op = 1;
