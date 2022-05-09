@@ -6,7 +6,8 @@ Table *table;
 int N;
 int M;
 
-int semId;
+sem_t *ovenSem;
+sem_t *tableSem;
 int ovenId;
 int tableId;
 pid_t cooksPids[MAX_N];
@@ -17,10 +18,15 @@ void SIGINTHandler(int sigNum) {
     for (int i = 0; i < M; ++i) kill(suppliersPids[i], SIGINT);
     while (wait(NULL) > 0);
 
-    if (semctl(semId, 0, IPC_RMID) == -1) raisePError("semctl");
+    if (sem_close(ovenSem) == -1) raisePError("sem_close");
+    if (sem_close(tableSem) == -1) raisePError("sem_close");
+    if (sem_unlink(OVEN_SEM_NAME) == -1) raisePError("sem_unlink");
+    if (sem_unlink(TABLE_SEM_NAME) == -1) raisePError("sem_unlink");
 
-    shmctl(ovenId, IPC_RMID, NULL);
-    shmctl(tableId, IPC_RMID, NULL);
+    if (munmap((void *) oven, sizeof(Oven)) == -1) raisePError("munmap");
+    if (munmap((void *) table, sizeof(Table)) == -1) raisePError("munmap");
+    if (shm_unlink(OVEN_SHM_NAME) == -1) raisePError("shm_unlink");
+    if (shm_unlink(TABLE_SHM_NAME) == -1) raisePError("shm_unlink");
 
     puts("\nPizzeria konczy prace.");
     exit(EXIT_SUCCESS);
@@ -36,28 +42,16 @@ void parseArgv(int argc, char *argv[]) {
     if (M >= 1<<15) raiseError("M must be less than 2^15");
 }
 
-int createSemaphores(void) {
-    key_t key = ftok(getenv("HOME"), 'S');
-    if (key == -1) raisePError("ftok");
+sem_t *createSemaphores(const char *name) {
+    sem_t *semAddress = sem_open(name, O_CREAT | O_EXCL | O_RDWR, 0600, 1);
+    if (semAddress == SEM_FAILED) raisePError("sem_open");
 
-    int id = semget(key, 2, IPC_CREAT | IPC_EXCL | 0600);
-    if (id == -1) raisePError("semget");
-
-    union semun arg = {1};
-    if (semctl(id, 0, SETVAL, arg) == -1) raisePError("semctl");
-    if (semctl(id, 1, SETVAL, arg) == -1) raisePError("semctl");
-
-    return id;
+    return semAddress;
 }
 
-int createSharedMemSeg(int projId) {
-    key_t key = ftok(getenv("HOME"), projId);
-    if (key == -1) raisePError("ftok");
-
-    size_t size = projId == OVEN_PROJ_ID ? sizeof(Oven) : sizeof(Table);
-
-    int id = shmget(key, size, IPC_CREAT | IPC_EXCL | 0600);
-    if (id == -1) raisePError("shmget");
+int createSharedMemSeg(const char *name) {
+    int id = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0600);
+    if (id == -1) raisePError("shm_open");
 
     return id;
 }
@@ -67,6 +61,8 @@ void prepOvenAndTable(void) {
         oven->place[i] = -1;
         table->place[i] = -1;
     }
+    oven->nextIdx = 0;
+    table->nextIdx = 0;
 }
 
 void createCooks(void) {
@@ -98,13 +94,17 @@ void createSuppliers(void) {
 int main(int argc, char *argv[]) {
     parseArgv(argc, argv);
 
-    semId = createSemaphores();
-    ovenId = createSharedMemSeg(OVEN_PROJ_ID); //for the oven
-    tableId = createSharedMemSeg(TABLE_PROJ_ID); //for the table
-    oven = (Oven *) shmat(ovenId, NULL, 0);
-    if (oven == (void *) -1) raisePError("shmat");
-    table = (Table *) shmat(tableId, NULL, 0);
-    if (table == (void *) -1) raisePError("shmat");
+    ovenSem = createSemaphores(OVEN_SEM_NAME);
+    tableSem = createSemaphores(TABLE_SEM_NAME);
+
+    ovenId = createSharedMemSeg(OVEN_SHM_NAME); //for the oven
+    ftruncate(ovenId, sizeof(Oven));
+    tableId = createSharedMemSeg(TABLE_SHM_NAME); //for the table
+    ftruncate(tableId, sizeof(Table));
+    oven = (Oven *) mmap(NULL, sizeof(Oven), PROT_READ | PROT_WRITE, MAP_SHARED, ovenId, 0);
+    if (oven == MAP_FAILED) raisePError("mmap");
+    table = (Table *) mmap(NULL, sizeof(Table), PROT_READ | PROT_WRITE, MAP_SHARED, tableId, 0);
+    if (table == MAP_FAILED) raisePError("mmap");
 
     prepOvenAndTable();
 

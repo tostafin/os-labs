@@ -113,7 +113,9 @@ int main(void) {
 
     int semId = getSemaphoreId();
     oven = (Oven *) shmat(getSharedMemId(OVEN_PROJ_ID), NULL, 0600);
+    if (oven == (void *) -1) raisePError("shmat");
     table = (Table *) shmat(getSharedMemId(TABLE_PROJ_ID), NULL, 0600);
+    if (table == (void *) -1) raisePError("shmat");
 
     handleCooking(semId);
 
