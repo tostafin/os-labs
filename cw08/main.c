@@ -16,6 +16,7 @@ int m = 0;
 DivMethod divMethod;
 char imageName[IMAGE_NAME_LEN];
 char imageNegName[IMAGE_NAME_LEN];
+size_t matrixParamsLen = 0;
 int W, H;
 int M;
 int **fileMatrix;
@@ -63,17 +64,21 @@ void parseFile(void) {
     errno = 0;
 
     // the 1st line
-    if (getline(&line, &len, file) == -1) {
+    ssize_t charsRead;
+    if ((charsRead = getline(&line, &len, file)) == -1) {
         if (errno != 0) raisePError("getline");
         raiseError("Early EOF.");
     }
+    matrixParamsLen += charsRead;
     if (strcmp(line, "P2\n") != 0) raiseError("The first line must be 'P2'.");
 
     // the 2nd line
-    if (getline(&line, &len, file) == -1) {
+    if ((charsRead = getline(&line, &len, file)) == -1) {
         if (errno != 0) raisePError("getline");
         raiseError("Early EOF.");
     }
+    matrixParamsLen += charsRead;
+
     char *remainder;
     W = (int) strtol(line, &remainder, 10);
     if (W <= 0) raiseError("The width of the matrix must be a positive integer.");
@@ -89,21 +94,23 @@ void parseFile(void) {
     if (*newLineRemainder != '\n') raiseError("The second line should be 'W H'.");
 
     // the third line
-    if (getline(&line, &len, file) == -1) {
+    if ((charsRead = getline(&line, &len, file)) == -1) {
         if (errno != 0) raisePError("getline");
         raiseError("Early EOF.");
     }
+    matrixParamsLen += charsRead;
+
     M = (int) strtol(line, &newLineRemainder, 10);
     if (M < 0 || M > 255) raiseError("M must be an integer between 0 and 255.");
     if (*newLineRemainder != '\n') raiseError("The third line should be 'M'.");
 
-    // the matrix from the file
+    // create the matrix
     fileMatrix = malloc(H * sizeof(int*));
     for (int i = 0; i < H; ++i) fileMatrix[i] = malloc(W * sizeof(int));
 
-    // the remaining lines (the matrix)
-    int i = 0, j = 0;
+    // parse the remaining lines
     char *lineBeginning = NULL;
+    int i = 0, j = 0;
     while (getline(&line, &len, file) != -1) {
         lineBeginning = line;
         while (1) {
@@ -113,13 +120,12 @@ void parseFile(void) {
                 raiseError("All values in the matrix must be integers between 0 and 255");
             }
             fileMatrix[i][j] = val;
-            if (*remainder != '\n') {
-                line = remainder;
-                remainder = NULL;
-                // skip white characters
-                while (isspace(*line)) ++line;
-            }
-            else break;
+            if (val < M) M = val;
+            line = remainder;
+            remainder = NULL;
+            // skip white characters
+            if (*line == '\n') break;
+            while (isspace(*line)) ++line;
             ++j;
         }
         ++i;
@@ -127,17 +133,16 @@ void parseFile(void) {
         line = lineBeginning;
     }
     if (lineBeginning == NULL) {
-        free(line);
-        raiseError("Early EOF.");
+        freeMemory();
+        if (errno != 0) raisePError("getline");
+        else raiseError("Early EOF.");
     }
-    if (errno != 0) raisePError("getline");
 
     free(lineBeginning);
     fclose(file);
 }
 
 void *getImageNegative(void *arg) {
-    puts("AAA");
     int *val = (int *) arg;
     int l = val[0];
     int r = val[1];
@@ -149,7 +154,7 @@ void *getImageNegative(void *arg) {
     for (int i = iStart; i <= iEnd; ++i) {
         if (i == iStart) {
             if (i == iEnd) {
-                for (int j = jStart; j < jEnd; ++j) {
+                for (int j = jStart; j <= jEnd; ++j) {
                     fileMatrix[i][j] = 255 - fileMatrix[i][j];
                 }
             } else {
@@ -159,7 +164,7 @@ void *getImageNegative(void *arg) {
             }
         } else {
             if (i == iEnd) {
-                for (int j = 0; j < jEnd; ++j) {
+                for (int j = 0; j <= jEnd; ++j) {
                     fileMatrix[i][j] = 255 - fileMatrix[i][j];
                 }
             } else {
@@ -223,14 +228,15 @@ void saveNegatedImage(void) {
     if (file == NULL) raisePError("fopen");
 
     // the matrix parameters
-    char matrixParams[100];
-    sprintf(matrixParams, "P2\n%d %d\n%d\n", W, H, M);
+    char matrixParams[matrixParamsLen];
+    sprintf(matrixParams, "P2\n%d %d\n%d\n", W, H, 255 - M);
     fputs(matrixParams, file);
 
     // the matrix
+    char intToStrArr[5]; // 255 is max, so {'2', '5', '5', ' ', '\0'}
     for (int i = 0; i < H; ++i) {
-        char intToStrArr[5]; // 255 is max, so {'2', '5', '5', ' ', '\0'}
         for (int j = 0; j < W - 1; ++j) {
+            printf("i = %d, j = %d, val = %d\n", i, j, fileMatrix[i][j]);
             sprintf(intToStrArr, "%d ", fileMatrix[i][j]);
             fputs(intToStrArr, file);
         }
