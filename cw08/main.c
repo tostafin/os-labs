@@ -105,7 +105,7 @@ void parseFile(void) {
     if (*newLineRemainder != '\n') raiseError("The third line should be 'M'.");
 
     // create the matrix
-    fileMatrix = malloc(H * sizeof(int*));
+    fileMatrix = malloc(H * sizeof(int *));
     for (int i = 0; i < H; ++i) fileMatrix[i] = malloc(W * sizeof(int));
 
     // parse the remaining lines
@@ -146,40 +146,52 @@ void *getImageNegative(void *arg) {
     int *val = (int *) arg;
     int l = val[0];
     int r = val[1];
-    int iStart = l / W;
-    int iEnd = r / W;
-    int jStart = l % W;
-    int jEnd = r % W;
+    switch (divMethod) {
+        case NUMBERS:;
+            int iStart = l / W;
+            int iEnd = r / W;
+            int jStart = l % W;
+            int jEnd = r % W;
 
-    for (int i = iStart; i <= iEnd; ++i) {
-        if (i == iStart) {
-            if (i == iEnd) {
-                for (int j = jStart; j <= jEnd; ++j) {
-                    fileMatrix[i][j] = 255 - fileMatrix[i][j];
-                }
-            } else {
-                for (int j = jStart; j < W; ++j) {
-                    fileMatrix[i][j] = 255 - fileMatrix[i][j];
+            for (int i = iStart; i <= iEnd; ++i) {
+                if (i == iStart) {
+                    if (i == iEnd) {
+                        for (int j = jStart; j <= jEnd; ++j) {
+                            fileMatrix[i][j] = 255 - fileMatrix[i][j];
+                        }
+                    } else {
+                        for (int j = jStart; j < W; ++j) {
+                            fileMatrix[i][j] = 255 - fileMatrix[i][j];
+                        }
+                    }
+                } else {
+                    if (i == iEnd) {
+                        for (int j = 0; j <= jEnd; ++j) {
+                            fileMatrix[i][j] = 255 - fileMatrix[i][j];
+                        }
+                    } else {
+                        for (int j = 0; j < W; ++j) {
+                            fileMatrix[i][j] = 255 - fileMatrix[i][j];
+                        }
+                    }
                 }
             }
-        } else {
-            if (i == iEnd) {
-                for (int j = 0; j <= jEnd; ++j) {
-                    fileMatrix[i][j] = 255 - fileMatrix[i][j];
-                }
-            } else {
-                for (int j = 0; j < W; ++j) {
-                    fileMatrix[i][j] = 255 - fileMatrix[i][j];
+
+            int remainingPixel = val[2];
+            if (remainingPixel != -1) {
+                fileMatrix[remainingPixel / W][remainingPixel % W] =
+                        255 - fileMatrix[remainingPixel / W][remainingPixel % W];
+            }
+            break;
+        case BLOCK:
+            for (int i = l; i <= r; ++i) {
+                if (i >= W) break;
+                for (int j = 0; j < H; ++j) {
+                    fileMatrix[j][i] = 255 - fileMatrix[j][i];
                 }
             }
-        }
+            break;
     }
-
-    int remainingPixel = val[2];
-    if (remainingPixel != -1) {
-        fileMatrix[remainingPixel / W][remainingPixel % W] = 255 - fileMatrix[remainingPixel / W][remainingPixel % W];
-    }
-
     return NULL;
 }
 
@@ -192,28 +204,39 @@ void *getImageNegative(void *arg) {
  */
 void runThreads(void) {
     pthread_t threads[m];
-
-    int negInt = (W * H) / m;
-    int remainder = (W * H) % m;
     int negInts[m][3]; // the third value is for the remaining pixel (if -1 then there is nothing to negate)
 
-    negInts[0][0] = 0;
-    negInts[0][1] = negInt - 1;
+    switch (divMethod) {
+        case NUMBERS:
+            ;int negInt = (W * H) / m;
+            int remainder = (W * H) % m;
 
-    for (int i = 1; i < m; ++i) {
-        negInts[i][0] = negInts[i - 1][0] + negInt;
-        negInts[i][1] = negInts[i - 1][1] + negInt;
+            negInts[0][0] = 0;
+            negInts[0][1] = negInt - 1;
+
+            for (int i = 1; i < m; ++i) {
+                negInts[i][0] = negInts[i - 1][0] + negInt;
+                negInts[i][1] = negInts[i - 1][1] + negInt;
+            }
+
+            // filling the remaining pixels
+            for (int i = 0; i < remainder; ++i) {
+                negInts[i][2] = negInts[m - 1][1] + i + 1;
+            }
+
+            for (int i = remainder; i < m; ++i) {
+                negInts[i][2] = -1;
+            }
+            break;
+        case BLOCK:
+            negInts[0][0] = 0;
+            negInts[0][1] = 1 + ((W - 1) / m) - 1;
+            for (int i = 1; i < m; ++i) {
+                negInts[i][0] = i * (1 + ((W - 1) / m)); // (k-1) * ceil(N/m)
+                negInts[i][1] = (i + 1) * (1 + ((W - 1) / m)) - 1; // k * ceil(N/m) - 1
+                if (negInts[i][1] >= W) break;
+            }
     }
-
-    // filling the remaining pixels
-    for (int i = 0; i < remainder; ++i) {
-        negInts[i][2] = negInts[m - 1][1] + i + 1;
-    }
-
-    for (int i = remainder; i < m; ++i) {
-        negInts[i][2] = -1;
-    }
-
     for (int i = 0; i < m; ++i) {
         pthread_create(&threads[i], NULL, getImageNegative, negInts[i]);
     }
@@ -236,7 +259,7 @@ void saveNegatedImage(void) {
     char intToStrArr[5]; // 255 is max, so {'2', '5', '5', ' ', '\0'}
     for (int i = 0; i < H; ++i) {
         for (int j = 0; j < W - 1; ++j) {
-            printf("i = %d, j = %d, val = %d\n", i, j, fileMatrix[i][j]);
+//            printf("i = %d, j = %d, val = %d\n", i, j, fileMatrix[i][j]);
             sprintf(intToStrArr, "%d ", fileMatrix[i][j]);
             fputs(intToStrArr, file);
         }
