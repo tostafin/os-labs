@@ -11,7 +11,7 @@ run:
 	./main 3 numbers image.pgm image_neg.pgm
 
 run_v:
-	valgrind -s --leak-check=full --show-leak-kinds=all ./main 10 numbers image.pgm image_neg.pgm
+	valgrind -s --leak-check=full --show-leak-kinds=all ./main 3 numbers image.pgm image_neg.pgm
 
 clean:
 	rm -f main
