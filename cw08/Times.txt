@@ -1,5 +1,5 @@
 Liczba watkow wplywa na czas wykonania pojedynczego watku --- im wieksza liczba watkow, tym lepszy czas poszczegolnego watku.
-Natomiast dla calkowitego czasu wykonania zadania liczba ta jest bez znaczenia --- dla większej raz potrafi byc szybszy niz dla mniejszej, raz wolniejszy.
+Natomiast dla calkowitego czasu wykonania zadania liczba ta jest bez znaczenia --- dla wiekszej raz potrafi byc szybszy niz dla mniejszej, raz wolniejszy.
 Wyniki sa jednoznaczne, jesli chodzi o dobor metody --- numbers jest zawsze szybsza niz block.
 
 
