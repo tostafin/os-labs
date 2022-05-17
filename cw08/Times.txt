@@ -1,0 +1,102 @@
+Liczba watkow wplywa na czas wykonania pojedynczego watku --- im wieksza liczba watkow, tym lepszy czas poszczegolnego watku.
+Natomiast dla calkowitego czasu wykonania zadania liczba ta jest bez znaczenia --- dla większej raz potrafi byc szybszy niz dla mniejszej, raz wolniejszy.
+Wyniki sa jednoznaczne, jesli chodzi o dobor metody --- numbers jest zawsze szybsza niz block.
+
+
+
+For numbers method:
+
+Number of threads: 1
+Thread number 0 time: 2611 microseconds.
+Negating image took 5182 microseconds.
+
+Number of threads: 2
+Thread number 0 time: 1459 microseconds.
+Thread number 1 time: 1412 microseconds.
+Negating image took 3317 microseconds.
+
+Number of threads: 4
+Thread number 0 time: 1150 microseconds.
+Thread number 1 time: 433 microseconds.
+Thread number 2 time: 1155 microseconds.
+Thread number 3 time: 1804 microseconds.
+Negating image took 5213 microseconds.
+
+Number of threads: 8
+Thread number 0 time: 268 microseconds.
+Thread number 1 time: 198 microseconds.
+Thread number 2 time: 257 microseconds.
+Thread number 3 time: 378 microseconds.
+Thread number 4 time: 331 microseconds.
+Thread number 5 time: 356 microseconds.
+Thread number 6 time: 184 microseconds.
+Thread number 7 time: 347 microseconds.
+Negating image took 2588 microseconds.
+
+Number of threads: 16
+Thread number 0 time: 137 microseconds.
+Thread number 1 time: 91 microseconds.
+Thread number 2 time: 239 microseconds.
+Thread number 3 time: 185 microseconds.
+Thread number 4 time: 202 microseconds.
+Thread number 5 time: 153 microseconds.
+Thread number 6 time: 213 microseconds.
+Thread number 7 time: 131 microseconds.
+Thread number 8 time: 170 microseconds.
+Thread number 9 time: 175 microseconds.
+Thread number 10 time: 159 microseconds.
+Thread number 11 time: 179 microseconds.
+Thread number 12 time: 454 microseconds.
+Thread number 13 time: 485 microseconds.
+Thread number 14 time: 231 microseconds.
+Thread number 15 time: 176 microseconds.
+Negating image took 4245 microseconds.
+
+
+For block method:
+
+Number of threads: 1
+Thread number 0 time: 44955 microseconds.
+Negating image took 45610 microseconds.
+
+Number of threads: 2
+Thread number 0 time: 36411 microseconds.
+Thread number 1 time: 26511 microseconds.
+Negating image took 36687 microseconds.
+
+Number of threads: 4
+Thread number 0 time: 19185 microseconds.
+Thread number 1 time: 17848 microseconds.
+Thread number 2 time: 10977 microseconds.
+Thread number 3 time: 10896 microseconds.
+Negating image took 19495 microseconds.
+
+Number of threads: 8
+Thread number 0 time: 13899 microseconds.
+Thread number 1 time: 9367 microseconds.
+Thread number 2 time: 9966 microseconds.
+Thread number 3 time: 9588 microseconds.
+Thread number 4 time: 11328 microseconds.
+Thread number 5 time: 8979 microseconds.
+Thread number 6 time: 10292 microseconds.
+Thread number 7 time: 8946 microseconds.
+Negating image took 28664 microseconds.
+
+Number of threads: 16
+Thread number 0 time: 4063 microseconds.
+Thread number 1 time: 4418 microseconds.
+Thread number 2 time: 2964 microseconds.
+Thread number 3 time: 2796 microseconds.
+Thread number 4 time: 2804 microseconds.
+Thread number 5 time: 3160 microseconds.
+Thread number 6 time: 2926 microseconds.
+Thread number 7 time: 3430 microseconds.
+Thread number 8 time: 9831 microseconds.
+Thread number 9 time: 4867 microseconds.
+Thread number 10 time: 2793 microseconds.
+Thread number 11 time: 5180 microseconds.
+Thread number 12 time: 2857 microseconds.
+Thread number 13 time: 5431 microseconds.
+Thread number 14 time: 2484 microseconds.
+Thread number 15 time: 2543 microseconds.
+Negating image took 19079 microseconds.

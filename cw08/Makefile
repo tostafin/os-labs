@@ -2,23 +2,22 @@ CC = gcc
 CFLAGS = -Wall -g
 LIBS = -lpthread
 
-all: compile run_v
+all: compile test clean
 
 compile:
 	$(CC) $(CFLAGS) main.c -o main $(LIBS)
 
-run:
-	#./main 3 block image.pgm image_neg.pgm
-	#./main 3 block image1.pgm image1_neg.pgm
-	#./main 16 numbers image2.pgm image2_neg.pgm
-
-run_v:
-	#valgrind -s --leak-check=full --show-leak-kinds=all ./main 4 numbers image.pgm image_neg.pgm
-	#valgrind -s --leak-check=full --show-leak-kinds=all ./main 16 block image.pgm image_neg.pgm
-	#valgrind -s --leak-check=full --show-leak-kinds=all ./main 16 numbers image1.pgm image1_neg.pgm
-	#valgrind -s --leak-check=full --show-leak-kinds=all ./main 16 block image1.pgm image1_neg.pgm
-	#valgrind -s --leak-check=full --show-leak-kinds=all ./main 16 numbers image2.pgm image2_neg.pgm
-	valgrind -s --leak-check=full --show-leak-kinds=all ./main 16 block image2.pgm image2_neg.pgm
+test:
+	printf "For numbers method:\n" > Times.txt
+	for number in 1 2 4 8 16 ; do \
+		printf "\nNumber of threads: $$number\n" >> Times.txt ; \
+		./main $$number numbers image.pgm image_neg.pgm >> Times.txt ; \
+	done
+	printf "\n\nFor block method:\n" >> Times.txt
+	for number in 1 2 4 8 16 ; do \
+	printf "\nNumber of threads: $$number\n" >> Times.txt ; \
+	./main $$number block image.pgm image_neg.pgm >> Times.txt ;\
+	done
 
 clean:
 	rm -f main

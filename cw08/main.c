@@ -326,13 +326,13 @@ void runThreads(void) {
     for (int i = 0; i < m; ++i) {
         void *threadTime = 0;
         pthread_join(threads[i], &threadTime);
-//        uint64_t *timePtr = (uint64_t *) threadTime;
-//        printf("Thread number %d time: %lu microseconds.\n", i, *(uint64_t *)timePtr);
+        uint64_t *timePtr = (uint64_t *) threadTime;
+        printf("Thread number %d time: %lu microseconds.\n", i, *(uint64_t *)timePtr);
     }
 
     clock_gettime(CLOCK_REALTIME, &end);
-//    printf("Negating image took %lu microseconds.\n",
-//           (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000);
+    printf("Negating image took %lu microseconds.\n",
+           (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000);
 }
 
 void saveNegatedImage(void) {
