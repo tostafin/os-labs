@@ -133,7 +133,6 @@ void parseFile(void) {
     // create the matrix
     fileMatrix = malloc(matrixRows * sizeof(int *));
     colsInIthRow = calloc(matrixRows, sizeof(int));
-//    for (int i = 0; i < H; ++i) fileMatrix[i] = malloc(W * sizeof(int));
 
     // parse the remaining lines
     char *lineBeginning = NULL;
@@ -148,7 +147,6 @@ void parseFile(void) {
                 freeMemory();
                 raiseError("All values in the matrix must be integers between 0 and 255");
             }
-//            printf("Val = %d, i = %d, j = %d\n", val, i, j);
             fileMatrix[i][j] = val;
             ++colsInIthRow[i];
             if (val < M) M = val;
@@ -191,10 +189,8 @@ void *getImageNegative(void *arg) {
             int iAux = val[4];
             int jAux = val[5];
             threadIdx = val[6];
-//            printf("idx = %d, iStart = %d, jStart = %d, iEnd = %d, jEnd = %d\n", idx, iStart, jStart, iEnd, jEnd);
             while (iStart < matrixRows) {
                 while (1) {
-//                    printf("idx = %d, row = %d, col = %d\n", idx, iStart, jStart);
                     fileMatrix[iStart][jStart] = 255 - fileMatrix[iStart][jStart];
                     if (iStart == iEnd && jStart == jEnd) goto end;
                     ++jStart;
@@ -213,10 +209,8 @@ void *getImageNegative(void *arg) {
             if (l != -1) {
                 int r = val[1];
                 threadIdx = val[2];
-//                printf("Idx = %d, i = %d, j = %d\n", threadIdx, l, r);
                 for (int i = l; i <= r; ++i) {
                     for (int j = 0; j < matrixRows; ++j) {
-//                        printf("i = %d, j = %d\n", i, j);
                         if (colsInIthRow[j] >= i) {
                             fileMatrix[j][i] = 255 - fileMatrix[j][i];
                         }
@@ -228,7 +222,6 @@ void *getImageNegative(void *arg) {
     clock_gettime(CLOCK_REALTIME, &end);
     threadTimes[threadIdx][0] = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;
     pthread_exit(threadTimes[threadIdx]);
-//    printf("took %lu us\n", (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000);
 }
 
 void runThreads(void) {
@@ -251,15 +244,12 @@ void runThreads(void) {
             while (row < matrixRows) {
                 while (1) {
                     ++numsRead;
-//                    printf("row = %d, col = %d\n", row, col);
                     if (numsRead == charsForCurrThread) {
                         indices[currThread][6] = currThread;
                         charsForCurrThread += threadDiv;
                         indices[currThread][2] = row;
                         indices[currThread][3] = col;
-//                        indices[currThread][4] = currThread;
                         ++currThread;
-//                        printf("Curr: %d, m: %d\n", currThread, m);
                         if (currThread < m) {
                             if (colsInIthRow[row] <= col + 1) {
                                 indices[currThread][0] = row + 1;
@@ -348,9 +338,7 @@ void saveNegatedImage(void) {
     char intToStrArr[5]; // 255 is max, so {'2', '5', '5', ' ', '\0'}
     for (int i = 0; i < matrixRows; ++i) {
         for (int j = 0; j < colsInIthRow[i] - 1; ++j) {
-//            printf("i = %d, j = %d, val = %d\n", i, j, fileMatrix[i][j]);
             sprintf(intToStrArr, "%d ", fileMatrix[i][j]);
-//            printf("Val = %d, i = %d, j = %d\n", fileMatrix[i][j], i, j);
             fputs(intToStrArr, file);
         }
         // the last we want to treat differently as we need to append '\n' instead of ' '
