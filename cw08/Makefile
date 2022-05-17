@@ -12,8 +12,8 @@ run:
 	./main 3 block image1.pgm image1_neg.pgm
 
 run_v:
-	valgrind -s --leak-check=full --show-leak-kinds=all ./main 3 block image.pgm image_neg.pgm
-	valgrind -s --leak-check=full --show-leak-kinds=all ./main 3 block image1.pgm image1_neg.pgm
+	#valgrind -s --leak-check=full --show-leak-kinds=all ./main 3 numbers image.pgm image_neg.pgm
+	valgrind -s --leak-check=full --show-leak-kinds=all ./main 3 numbers image1.pgm image1_neg.pgm
 
 
 clean:

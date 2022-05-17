@@ -19,7 +19,9 @@ char imageNegName[IMAGE_NAME_LEN];
 size_t matrixParamsLen = 0;
 int W, H;
 int M;
+int matrixRows;
 int **fileMatrix;
+int *colsInIthRow;
 
 void raiseError(const char *message) {
     fprintf(stderr, "%s\n", message);
@@ -34,6 +36,7 @@ void raisePError(const char *message) {
 void freeMemory(void) {
     for (int i = 0; i < H; ++i) free(fileMatrix[i]);
     free(fileMatrix);
+    free(colsInIthRow);
 }
 
 void parseArgv(int argc, char *argv[]) {
@@ -53,6 +56,13 @@ void parseArgv(int argc, char *argv[]) {
     strcpy(imageName, argv[3]);
 
     strcpy(imageNegName, argv[4]);
+}
+
+void cntLinesInFile(FILE *file) {
+    char *line = NULL;
+    size_t len = 0;
+    while (getline(&line, &len, file) != -1) ++matrixRows;
+    free(line);
 }
 
 void parseFile(void) {
@@ -104,22 +114,32 @@ void parseFile(void) {
     if (M < 0 || M > 255) raiseError("M must be an integer between 0 and 255.");
     if (*newLineRemainder != '\n') raiseError("The third line should be 'M'.");
 
+    // count the number of lines in the file
+    long matrixBeginning = ftell(file);
+    cntLinesInFile(file);
+    fseek(file, matrixBeginning, SEEK_SET);
+
     // create the matrix
-    fileMatrix = malloc(H * sizeof(int *));
-    for (int i = 0; i < H; ++i) fileMatrix[i] = malloc(W * sizeof(int));
+    fileMatrix = malloc(matrixRows * sizeof(int *));
+    colsInIthRow = calloc(matrixRows, sizeof(int));
+//    for (int i = 0; i < H; ++i) fileMatrix[i] = malloc(W * sizeof(int));
 
     // parse the remaining lines
     char *lineBeginning = NULL;
     int i = 0, j = 0;
-    while (getline(&line, &len, file) != -1) {
+    while ((charsRead = getline(&line, &len, file)) != -1) {
         lineBeginning = line;
+        // we're going to need at most charsRead/2 + 1, since half of them are white characters, '\0' and '\n'
+        fileMatrix[i] = malloc((charsRead / 2 + 1) * sizeof(int));
         while (1) {
             int val = (int) strtol(line, &remainder, 10);
             if (val < 0 || val > 255) {
                 freeMemory();
                 raiseError("All values in the matrix must be integers between 0 and 255");
             }
+            printf("Val = %d, i = %d, j = %d\n", val, i, j);
             fileMatrix[i][j] = val;
+            ++colsInIthRow[i];
             if (val < M) M = val;
             line = remainder;
             remainder = NULL;
@@ -144,52 +164,28 @@ void parseFile(void) {
 
 void *getImageNegative(void *arg) {
     int *val = (int *) arg;
-    int l = val[0];
-    int r = val[1];
     switch (divMethod) {
         case NUMBERS:;
-            int iStart = l / W;
-            int iEnd = r / W;
-            int jStart = l % W;
-            int jEnd = r % W;
-
-            for (int i = iStart; i <= iEnd; ++i) {
-                if (i == iStart) {
-                    if (i == iEnd) {
-                        for (int j = jStart; j <= jEnd; ++j) {
-                            fileMatrix[i][j] = 255 - fileMatrix[i][j];
-                        }
-                    } else {
-                        for (int j = jStart; j < W; ++j) {
-                            fileMatrix[i][j] = 255 - fileMatrix[i][j];
-                        }
-                    }
-                } else {
-                    if (i == iEnd) {
-                        for (int j = 0; j <= jEnd; ++j) {
-                            fileMatrix[i][j] = 255 - fileMatrix[i][j];
-                        }
-                    } else {
-                        for (int j = 0; j < W; ++j) {
-                            fileMatrix[i][j] = 255 - fileMatrix[i][j];
-                        }
-                    }
+            int iStart = val[0];
+            int jStart = val[1];
+            int iEnd = val[2];
+            int jEnd = val[3];
+            int idx = val[4];
+            printf("idx = %d, iStart = %d, jStart = %d, iEnd = %d, jEnd = %d\n", idx, iStart, jStart, iEnd, jEnd);
+            while (iStart < matrixRows) {
+                while (1) {
+                    printf("idx = %d, row = %d, col = %d\n", idx, iStart, jStart);
+                    fileMatrix[iStart][jStart] = 255 - fileMatrix[iStart][jStart];
+                    if (iStart == iEnd && jStart == jEnd) goto end;
+                    ++jStart;
+                    if (colsInIthRow[iStart] <= jStart) break;
                 }
+                ++iStart;
+                jStart = 0;
             }
 
-            int remainingPixel = val[2];
-            if (remainingPixel != -1) {
-                fileMatrix[remainingPixel / W][remainingPixel % W] =
-                        255 - fileMatrix[remainingPixel / W][remainingPixel % W];
-            }
-            break;
+        end: break;
         case BLOCK:
-            for (int i = l; i <= r; ++i) {
-                if (i >= W) break;
-                for (int j = 0; j < H; ++j) {
-                    fileMatrix[j][i] = 255 - fileMatrix[j][i];
-                }
-            }
             break;
     }
     return NULL;
@@ -204,41 +200,50 @@ void *getImageNegative(void *arg) {
  */
 void runThreads(void) {
     pthread_t threads[m];
-    int negInts[m][3]; // the third value is for the remaining pixel (if -1 then there is nothing to negate)
+    int indices[m][5]; // [iStart, jStart, iEnd, jEnd]
 
     switch (divMethod) {
         case NUMBERS:
-            ;int negInt = (W * H) / m;
-            int remainder = (W * H) % m;
-
-            negInts[0][0] = 0;
-            negInts[0][1] = negInt - 1;
-
-            for (int i = 1; i < m; ++i) {
-                negInts[i][0] = negInts[i - 1][0] + negInt;
-                negInts[i][1] = negInts[i - 1][1] + negInt;
-            }
-
-            // filling the remaining pixels
-            for (int i = 0; i < remainder; ++i) {
-                negInts[i][2] = negInts[m - 1][1] + i + 1;
-            }
-
-            for (int i = remainder; i < m; ++i) {
-                negInts[i][2] = -1;
+            ;int row = 0, col = 0;
+            int numsRead = 0;
+            int currThread = 0;
+            int threadDiv = W * H / m;
+            int charsForCurrThread = threadDiv;
+            indices[0][0] = 0;
+            indices[0][1] = 0;
+            while (row < matrixRows) {
+                while (1) {
+                    ++numsRead;
+//                    printf("row = %d, col = %d\n", row, col);
+                    if (numsRead == charsForCurrThread) {
+                        charsForCurrThread += threadDiv;
+                        indices[currThread][2] = row;
+                        indices[currThread][3] = col;
+                        indices[currThread][4] = currThread;
+                        ++currThread;
+                        printf("Curr: %d, m: %d\n", currThread, m);
+                        if (currThread < m) {
+                            if (colsInIthRow[row] <= col + 1) {
+                                indices[currThread][0] = row + 1;
+                                indices[currThread][1] = 0;
+                            } else {
+                                indices[currThread][0] = row;
+                                indices[currThread][1] = col + 1;
+                            }
+                        }
+                    }
+                    ++col;
+                    if (colsInIthRow[row] <= col) break;
+                }
+                ++row;
+                col = 0;
             }
             break;
         case BLOCK:
-            negInts[0][0] = 0;
-            negInts[0][1] = 1 + ((W - 1) / m) - 1;
-            for (int i = 1; i < m; ++i) {
-                negInts[i][0] = i * (1 + ((W - 1) / m)); // (k-1) * ceil(N/m)
-                negInts[i][1] = (i + 1) * (1 + ((W - 1) / m)) - 1; // k * ceil(N/m) - 1
-                if (negInts[i][1] >= W) break;
-            }
+            break;
     }
     for (int i = 0; i < m; ++i) {
-        pthread_create(&threads[i], NULL, getImageNegative, negInts[i]);
+        pthread_create(&threads[i], NULL, getImageNegative, indices[i]);
     }
 
     for (int i = 0; i < m; ++i) {
@@ -257,14 +262,15 @@ void saveNegatedImage(void) {
 
     // the matrix
     char intToStrArr[5]; // 255 is max, so {'2', '5', '5', ' ', '\0'}
-    for (int i = 0; i < H; ++i) {
-        for (int j = 0; j < W - 1; ++j) {
+    for (int i = 0; i < matrixRows; ++i) {
+        for (int j = 0; j < colsInIthRow[i] - 1; ++j) {
 //            printf("i = %d, j = %d, val = %d\n", i, j, fileMatrix[i][j]);
             sprintf(intToStrArr, "%d ", fileMatrix[i][j]);
+            printf("Val = %d, i = %d, j = %d\n", fileMatrix[i][j], i, j);
             fputs(intToStrArr, file);
         }
         // the last we want to treat differently as we need to append '\n' instead of ' '
-        if (i != H - 1) sprintf(intToStrArr, "%d\n", fileMatrix[i][W - 1]);
+        sprintf(intToStrArr, "%d\n", fileMatrix[i][colsInIthRow[i] - 1]);
         fputs(intToStrArr, file);
     }
     fclose(file);
