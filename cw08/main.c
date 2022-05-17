@@ -4,6 +4,8 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include <sys/time.h>
+#include <stdint.h>
 
 #define IMAGE_NAME_LEN 100
 
@@ -22,6 +24,7 @@ int M;
 int matrixRows;
 int **fileMatrix;
 int *colsInIthRow;
+uint64_t **threadTimes;
 
 void raiseError(const char *message) {
     fprintf(stderr, "%s\n", message);
@@ -37,6 +40,10 @@ void freeMemory(void) {
     for (int i = 0; i < matrixRows; ++i) free(fileMatrix[i]);
     free(fileMatrix);
     free(colsInIthRow);
+    for (int i = 0; i < m; ++i) {
+        free(threadTimes[i]);
+    }
+    free(threadTimes);
 }
 
 void parseArgv(int argc, char *argv[]) {
@@ -102,6 +109,10 @@ void parseFile(void) {
         raiseError("The number of threads must not be greater than the number of elements in the matrix");
     }
     if (*newLineRemainder != '\n') raiseError("The second line should be 'W H'.");
+    threadTimes = malloc(m * sizeof(uint64_t *));
+    for (int i = 0; i < m; ++i) {
+        threadTimes[i] = malloc(sizeof(uint64_t));
+    }
 
     // the third line
     if ((charsRead = getline(&line, &len, file)) == -1) {
@@ -167,7 +178,10 @@ void parseFile(void) {
 }
 
 void *getImageNegative(void *arg) {
+    struct timespec start, end;
+    clock_gettime(CLOCK_REALTIME, &start);
     int *val = (int *) arg;
+    int threadIdx;
     switch (divMethod) {
         case NUMBERS:;
             int iStart = val[0];
@@ -176,6 +190,7 @@ void *getImageNegative(void *arg) {
             int jEnd = val[3];
             int iAux = val[4];
             int jAux = val[5];
+            threadIdx = val[6];
 //            printf("idx = %d, iStart = %d, jStart = %d, iEnd = %d, jEnd = %d\n", idx, iStart, jStart, iEnd, jEnd);
             while (iStart < matrixRows) {
                 while (1) {
@@ -197,28 +212,30 @@ void *getImageNegative(void *arg) {
             int l = val[0];
             if (l != -1) {
                 int r = val[1];
+                threadIdx = val[2];
+//                printf("Idx = %d, i = %d, j = %d\n", threadIdx, l, r);
                 for (int i = l; i <= r; ++i) {
-                    if (i >= W) break;
-                    for (int j = 0; j < H; ++j) {
-                        fileMatrix[j][i] = 255 - fileMatrix[j][i];
+                    for (int j = 0; j < matrixRows; ++j) {
+//                        printf("i = %d, j = %d\n", i, j);
+                        if (colsInIthRow[j] >= i) {
+                            fileMatrix[j][i] = 255 - fileMatrix[j][i];
+                        }
                     }
                 }
             }
             break;
     }
-    return NULL;
+    clock_gettime(CLOCK_REALTIME, &end);
+    threadTimes[threadIdx][0] = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000;
+    pthread_exit(threadTimes[threadIdx]);
+//    printf("took %lu us\n", (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000);
 }
 
-/* We're going to divide it evenly like this:
- * 1. get the number of pixels to be negated by each thread: negInt = (W * H) / m
- * 2. the first thread will negate pixels within the range [0, negInt - 1] := [l, r]
- * 3. the next and the others will have the intervals [l + negInt, r + negInt]
- * 4. if (W * H) % m == 0 then the number of pixels to be negated can be divided evenly between threads
- * 5. else it cannot be done, so we will assign one more task to each thread starting from the beginning
- */
 void runThreads(void) {
+    struct timespec start, end;
+    clock_gettime(CLOCK_REALTIME, &start);
     pthread_t threads[m];
-    int indices[m][6]; // [iStart, jStart, iEnd, jEnd, iAux, jAux]
+    int indices[m][7]; // [iStart, jStart, iEnd, jEnd, iAux, jAux, threadIdx]
 
     switch (divMethod) {
         case NUMBERS:;
@@ -236,6 +253,7 @@ void runThreads(void) {
                     ++numsRead;
 //                    printf("row = %d, col = %d\n", row, col);
                     if (numsRead == charsForCurrThread) {
+                        indices[currThread][6] = currThread;
                         charsForCurrThread += threadDiv;
                         indices[currThread][2] = row;
                         indices[currThread][3] = col;
@@ -285,7 +303,7 @@ void runThreads(void) {
             break;
         case BLOCK:
             /* Here the row number doesn't matter since we're going to the very end of the matrix, so this time:
-             * [jStart, jEnd, ...]: the remaining four don't matter
+             * [jStart, jEnd, threadIdx, ...]: the remaining four don't matter
              */
             indices[0][0] = 0;
             indices[0][1] = 1 + ((W - 1) / m) - 1;
@@ -293,6 +311,7 @@ void runThreads(void) {
             for (i = 0; i < m; ++i) {
                 indices[i][0] = i * (1 + ((W - 1) / m)); // (k-1) * ceil(N/m)
                 indices[i][1] = (i + 1) * (1 + ((W - 1) / m)) - 1; // k * ceil(N/m) - 1
+                indices[i][2] = i;
                 if (indices[i][1] >= W) break;
             }
             for (int j = i + 1; j < m; ++j) {
@@ -305,8 +324,15 @@ void runThreads(void) {
     }
 
     for (int i = 0; i < m; ++i) {
-        pthread_join(threads[i], NULL);
+        void *threadTime = 0;
+        pthread_join(threads[i], &threadTime);
+//        uint64_t *timePtr = (uint64_t *) threadTime;
+//        printf("Thread number %d time: %lu microseconds.\n", i, *(uint64_t *)timePtr);
     }
+
+    clock_gettime(CLOCK_REALTIME, &end);
+//    printf("Negating image took %lu microseconds.\n",
+//           (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_nsec - start.tv_nsec) / 1000);
 }
 
 void saveNegatedImage(void) {
