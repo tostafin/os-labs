@@ -83,6 +83,10 @@ void handleClients(char *clientName, size_t clientNameLen) {
     }
 
     while (true) {
+        read(socketFd, response, 6);
+        if (strcmp(response, "wait") == 0) {
+            puts("Waiting for an other player.");
+        }
     }
 
 }

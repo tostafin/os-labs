@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #define CLIENT_NAME_MAX_LEN 64
 

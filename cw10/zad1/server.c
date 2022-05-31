@@ -5,10 +5,16 @@
 int networkSocketFd, localSocketFd;
 
 pthread_mutex_t clientsMutex = PTHREAD_MUTEX_INITIALIZER;
+typedef enum {
+    WAIT = -2,
+    WAIT_SENT = -1
+} Opponent;
+
 typedef struct client {
     char names[CLIENT_NAME_MAX_LEN];
     int fd;
     ConnectMode connectMode;
+    Opponent opponent;
 } Client;
 Client clients[MAX_NUM_OF_CLIENTS];
 
@@ -52,6 +58,11 @@ void initSockets(uint16_t portNum, char *socketPath) {
     strcpy(addr.sun_path, socketPath);
     unlink(socketPath);
     if (bind(localSocketFd, (struct sockaddr *) &addr, sizeof(struct sockaddr)) == -1) raisePError("bind");
+
+    for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
+        clients[i].opponent = WAIT;
+    }
+    errno = 0;
 }
 
 void closeConnectionWithClient(int fd) {
@@ -67,11 +78,13 @@ void *listenFunc(void *arg) {
     int clientFd;
     char clientName[CLIENT_NAME_MAX_LEN];
     while (true) {
+        // TODO: use epoll/poll/select
         if ((clientFd = accept(networkSocketFd, NULL, NULL)) != -1) connectMode = NETWORK;
         else if ((clientFd = accept(localSocketFd, NULL, NULL)) != -1) connectMode = LOCAL;
 
         if (connectMode != -1) {
             read(clientFd, clientName, CLIENT_NAME_MAX_LEN);
+            if ((errno = pthread_mutex_lock(&clientsMutex)) != 0) raisePError("pthread_mutex_lock");
             for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
                 if (strcmp(clients[i].names, clientName) == 0) {
                     printf("Client named %s tried to connect, but there's already Client with that name connected.", clientName);
@@ -85,8 +98,10 @@ void *listenFunc(void *arg) {
                     strcpy(clients[i].names, clientName);
                     clients[i].fd = clientFd;
                     clients[i].connectMode = connectMode;
+                    break;
                 }
             }
+            if ((errno = pthread_mutex_unlock(&clientsMutex)) != 0) raisePError("pthread_mutex_unlock");
             printf("Client named %s saved.\n", clientName);
             write(clientFd, "saved", 6);
         }
@@ -97,6 +112,16 @@ void *listenFunc(void *arg) {
 
 void *gameFunc(void *arg) {
     while (true) {
+        if ((errno = pthread_mutex_lock(&clientsMutex)) != 0) raisePError("pthread_mutex_lock");
+        for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
+            if (clients[i].names[0] != '\0') {
+                if (clients[i].opponent == WAIT) {
+                    write(clients[i].fd, "wait", 5);
+                    clients[i].opponent = WAIT_SENT;
+                }
+            }
+        }
+        if ((errno = pthread_mutex_unlock(&clientsMutex)) != 0) raisePError("pthread_mutex_unlock");
     }
 
     return NULL;
