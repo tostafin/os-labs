@@ -1,24 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <pthread.h>
-#include <sys/socket.h>
-#include <linux/un.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <signal.h>
+#include "common.h"
+
+#define MAX_NUM_OF_CLIENTS 16
 
 int networkSocketFd, localSocketFd;
 
-void raiseError(const char *message) {
-    fprintf(stderr, "[ERROR]: %s\n", message);
-    exit(EXIT_FAILURE);
-}
-
-void raisePError(const char *message) {
-    perror(message);
-    exit(EXIT_FAILURE);
-}
+pthread_mutex_t clientsMutex = PTHREAD_MUTEX_INITIALIZER;
+typedef struct client {
+    char names[CLIENT_NAME_MAX_LEN];
+    int fd;
+    ConnectMode connectMode;
+} Client;
+Client clients[MAX_NUM_OF_CLIENTS];
 
 void cleanSockets(void) {
     shutdown(networkSocketFd, SHUT_RDWR);
@@ -44,7 +36,7 @@ void parseArgv(int argc, char *argv[], uint16_t *portNum, char **socketPath) {
 
 void initSockets(uint16_t portNum, char *socketPath) {
     // network socket
-    if ((networkSocketFd = socket(AF_INET, SOCK_STREAM, 0)) == -1) raisePError("socket");
+    if ((networkSocketFd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) == -1) raisePError("socket");
     struct sockaddr_in sockaddrIn;
     struct in_addr inAddr = {INADDR_ANY};
     sockaddrIn.sin_addr = inAddr;
@@ -54,12 +46,76 @@ void initSockets(uint16_t portNum, char *socketPath) {
     if (bind(networkSocketFd, (struct sockaddr *) &sockaddrIn, sizeof(struct sockaddr)) == -1) raisePError("bind");
 
     // local socket
-    if ((localSocketFd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) raisePError("socket");
+    if ((localSocketFd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)) == -1) raisePError("socket");
     struct sockaddr_un addr;
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, socketPath);
     unlink(socketPath);
     if (bind(localSocketFd, (struct sockaddr *) &addr, sizeof(struct sockaddr)) == -1) raisePError("bind");
+}
+
+void closeConnectionWithClient(int fd) {
+    shutdown(fd, SHUT_RDWR);
+    close(fd);
+}
+
+void *listenFunc(void *arg) {
+    listen(networkSocketFd, MAX_NUM_OF_CLIENTS / 2);
+    listen(localSocketFd, MAX_NUM_OF_CLIENTS / 2);
+
+    ConnectMode connectMode = -1;
+    int clientFd;
+    char clientName[CLIENT_NAME_MAX_LEN];
+    while (true) {
+        if ((clientFd = accept(networkSocketFd, NULL, NULL)) != -1) connectMode = NETWORK;
+        else if ((clientFd = accept(localSocketFd, NULL, NULL)) != -1) connectMode = LOCAL;
+
+        if (connectMode != -1) {
+            read(clientFd, clientName, CLIENT_NAME_MAX_LEN);
+            for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
+                if (strcmp(clients[i].names, clientName) == 0) {
+                    printf("Client named %s tried to connect, but there's already Client with that name connected.", clientName);
+                    write(clientFd, "busy", 5);
+                    closeConnectionWithClient(clientFd);
+                    goto continueWhile;
+                }
+            }
+            for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
+                if (clients[i].names[0] == '\0') {
+                    strcpy(clients[i].names, clientName);
+                    clients[i].fd = clientFd;
+                    clients[i].connectMode = connectMode;
+                }
+            }
+            printf("Client named %s saved.\n", clientName);
+            write(clientFd, "saved", 6);
+        }
+        continueWhile:
+        connectMode = -1;
+    }
+}
+
+void *gameFunc(void *arg) {
+    while (true) {
+    }
+
+    return NULL;
+}
+
+void *pingFunc(void *arg) {
+    return NULL;
+}
+
+void handleServer(void) {
+    pthread_t listenThread, gameThread, pingThread;
+
+    pthread_create(&listenThread, NULL, listenFunc, NULL);
+    pthread_create(&gameThread, NULL, gameFunc, NULL);
+    pthread_create(&pingThread, NULL, pingFunc, NULL);
+
+    pthread_join(listenThread, NULL);
+    pthread_join(gameThread, NULL);
+    pthread_join(pingThread, NULL);
 }
 
 int main(int argc, char *argv[]) {
@@ -70,6 +126,8 @@ int main(int argc, char *argv[]) {
     initSockets(portNum, socketPath);
 
     signal(SIGINT, SIGINTHandler);
+
+    handleServer();
 
     cleanSockets();
 
