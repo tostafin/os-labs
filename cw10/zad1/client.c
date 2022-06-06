@@ -1,5 +1,12 @@
 #include "common.h"
 
+typedef enum {
+    DRAW,
+    WIN,
+    LOSE,
+    NONE
+} Result;
+
 int socketFd;
 
 void cleanSockets(void) {
@@ -12,10 +19,12 @@ void SIGINTHandler(int sigNum) {
     exit(EXIT_SUCCESS);
 }
 
-void parseArgv(int argc, char *argv[], char **clientName, size_t *clientNameLen, ConnectMode *connectMode, char **serverAddress, uint16_t *serverPort) {
+void parseArgv(int argc, char *argv[], char **clientName, size_t *clientNameLen, ConnectMode *connectMode,
+               char **serverAddress, uint16_t *serverPort) {
     if (argc != 4) raiseError("You must pass exactly three arguments.");
 
-    if ((*clientNameLen = strlen(argv[1])) > CLIENT_NAME_MAX_LEN) raiseError("Client's name length cannot be longer than 64.");
+    if ((*clientNameLen = strlen(argv[1])) > CLIENT_NAME_MAX_LEN)
+        raiseError("Client's name length cannot be longer than 64.");
     *clientName = argv[1];
 
     if (strcmp(argv[2], "network") == 0) *connectMode = NETWORK;
@@ -40,7 +49,8 @@ void connectToSocket(ConnectMode connectMode, char *serverAddress, uint16_t serv
             struct in_addr inAddr;
             int inet_pton_res = inet_pton(AF_INET, serverAddress, &inAddr);
             if (inet_pton_res == 0) {
-                raiseError("The address does not contain a character string representing a valid network address in the specified address family");
+                raiseError(
+                        "The address does not contain a character string representing a valid network address in the specified address family");
             }
             if (inet_pton_res == -1) {
                 raisePError("inet_pton");
@@ -50,7 +60,8 @@ void connectToSocket(ConnectMode connectMode, char *serverAddress, uint16_t serv
             sockaddrIn.sin_port = htons(serverPort);
             sockaddrIn.sin_family = AF_INET;
             sockaddrIn.sin_zero[0] = '\0';
-            if (connect(socketFd, (struct sockaddr *) &sockaddrIn, sizeof(struct sockaddr)) == -1) raisePError("connect1");
+            if (connect(socketFd, (struct sockaddr *) &sockaddrIn, sizeof(struct sockaddr)) == -1)
+                raisePError("connect1");
             break;
         case LOCAL:
             if ((socketFd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) raisePError("socket");
@@ -63,6 +74,85 @@ void connectToSocket(ConnectMode connectMode, char *serverAddress, uint16_t serv
     }
 }
 
+void drawBoard(const char board[]) {
+    printf("\n");
+    for (int i = 0; i < 9; ++i) {
+        if (board[i] != '\0') {
+            printf("%c", board[i]);
+        } else {
+            printf("_");
+        }
+
+        if (i % 3 != 2) {
+            printf("|");
+        } else {
+            printf("\n");
+        }
+    }
+}
+
+Result checkWinner(const char *board, int move, char mySign) {
+    char boardArr[3][3];
+    int movesCnt = 0;
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            boardArr[i][j] = board[3 * i + j];
+            if (boardArr[i][j] == 'X' || boardArr[i][j] == 'O') ++movesCnt;
+        }
+    }
+    int x = move % 3;
+    int y = move / 3;
+    int n = 9;
+
+    //check col
+    for (int i = 0; i < 9; i++) {
+        if (boardArr[x][i] != mySign)
+            break;
+        if (i == n - 1) {
+            return WIN;
+        }
+    }
+
+    //check row
+    for (int i = 0; i < n; i++) {
+        if (boardArr[i][y] != mySign)
+            break;
+        if (i == n - 1) {
+            return WIN;
+        }
+    }
+
+    //check diag
+    if (x == y) {
+        //we're on a diagonal
+        for (int i = 0; i < n; i++) {
+            if (boardArr[i][i] != mySign)
+                break;
+            if (i == n - 1) {
+                return WIN;
+            }
+        }
+    }
+
+    //check anti diag
+    if (x + y == n - 1) {
+        for (int i = 0; i < n; i++) {
+            if (boardArr[i][(n - 1) - i] != mySign)
+                break;
+            if (i == n - 1) {
+                return WIN;
+            }
+        }
+    }
+
+    //check draw
+    if (movesCnt == 8) {
+        return DRAW;
+    }
+
+    return NONE;
+}
+
 void handleClients(char *clientName, size_t clientNameLen) {
     // sending Client's name to Server
     ssize_t nWrote;
@@ -72,24 +162,52 @@ void handleClients(char *clientName, size_t clientNameLen) {
     }
 
     // waiting for confirmation (saved)
-    char response[6];
-    read(socketFd, response, 6);
+    char response[RESPONSE_MAX_SIZE];
+    read(socketFd, response, RESPONSE_MAX_SIZE);
     if (strcmp(response, "busy") == 0) {
         cleanSockets();
         raiseError("Your name is already occupied by another Client.");
     }
     if (strcmp(response, "saved") == 0) {
         puts("Server saved your name.");
+        write(socketFd, "received", 9);
     }
 
+    char mySign;
+    int move = 0;
+//    int movesCnt = 0;
     while (true) {
-        read(socketFd, response, 6);
-        if (strcmp(response, "wait") == 0) {
-            puts("Waiting for an other player.");
+        read(socketFd, response, RESPONSE_MAX_SIZE);
+        puts("Received a message from the server.");
+        printf("str = %s\n", response);
+        if (response[0] == 'x' || response[0] == 'o') {
+            mySign = (char) toupper(response[0]);
+            printf("I've been assigned %c\n", mySign);
+        } else {
+            drawBoard(response);
+            while (move < 1 || move > 9) {
+                puts("Your move (1-9):");
+                scanf("%d", &move);
+            }
+            response[move - 1] = mySign;
+            switch (checkWinner(response, move, mySign)) {
+                case DRAW:
+                    strcpy(response, "The game has been drawn.");
+                    break;
+                case WIN:
+                    sprintf(response, "W: the winner is %s\n", clientName);
+                    break;
+                case LOSE:
+                case NONE:
+                    break;
+            }
+            write(socketFd, response, 10);
+            puts("Sent the result to the server.");
         }
+        move = 0;
     }
-
 }
+
 
 int main(int argc, char *argv[]) {
     ConnectMode connectMode;

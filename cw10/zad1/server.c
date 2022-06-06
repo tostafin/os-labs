@@ -15,6 +15,7 @@ typedef struct client {
     int fd;
     ConnectMode connectMode;
     Opponent opponent;
+    bool myTurn;
 } Client;
 Client clients[MAX_NUM_OF_CLIENTS];
 
@@ -58,11 +59,6 @@ void initSockets(uint16_t portNum, char *socketPath) {
     strcpy(addr.sun_path, socketPath);
     unlink(socketPath);
     if (bind(localSocketFd, (struct sockaddr *) &addr, sizeof(struct sockaddr)) == -1) raisePError("bind");
-
-    for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
-        clients[i].opponent = WAIT;
-    }
-    errno = 0;
 }
 
 void closeConnectionWithClient(int fd) {
@@ -78,7 +74,6 @@ void *listenFunc(void *arg) {
     int clientFd;
     char clientName[CLIENT_NAME_MAX_LEN];
     while (true) {
-        // TODO: use epoll/poll/select
         if ((clientFd = accept(networkSocketFd, NULL, NULL)) != -1) connectMode = NETWORK;
         else if ((clientFd = accept(localSocketFd, NULL, NULL)) != -1) connectMode = LOCAL;
 
@@ -87,7 +82,8 @@ void *listenFunc(void *arg) {
             if ((errno = pthread_mutex_lock(&clientsMutex)) != 0) raisePError("pthread_mutex_lock");
             for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
                 if (strcmp(clients[i].names, clientName) == 0) {
-                    printf("Client named %s tried to connect, but there's already Client with that name connected.", clientName);
+                    printf("Client named %s tried to connect, but there's already Client with that name connected.",
+                           clientName);
                     write(clientFd, "busy", 5);
                     closeConnectionWithClient(clientFd);
                     goto continueWhile;
@@ -101,9 +97,9 @@ void *listenFunc(void *arg) {
                     break;
                 }
             }
-            if ((errno = pthread_mutex_unlock(&clientsMutex)) != 0) raisePError("pthread_mutex_unlock");
             printf("Client named %s saved.\n", clientName);
             write(clientFd, "saved", 6);
+            if ((errno = pthread_mutex_unlock(&clientsMutex)) != 0) raisePError("pthread_mutex_unlock");
         }
         continueWhile:
         connectMode = -1;
@@ -111,16 +107,83 @@ void *listenFunc(void *arg) {
 }
 
 void *gameFunc(void *arg) {
+    char response[RESPONSE_MAX_SIZE];
+    int firstPlayer = -1, secondPlayer = -1;
     while (true) {
         if ((errno = pthread_mutex_lock(&clientsMutex)) != 0) raisePError("pthread_mutex_lock");
+
         for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
             if (clients[i].names[0] != '\0') {
-                if (clients[i].opponent == WAIT) {
-                    write(clients[i].fd, "wait", 5);
-                    clients[i].opponent = WAIT_SENT;
+                if (clients[i].opponent == WAIT || (clients[i].opponent >= 0 && clients[i].myTurn)) {
+                    read(clients[i].fd, response, RESPONSE_MAX_SIZE);
+                    puts("Received a message from a client.");
+                    if (strcmp(response, "received") == 0) {
+                        clients[i].opponent = WAIT_SENT;
+                    } else if (strcmp(response, "W") == 0) {
+                        // the game is over (w == win)
+                        clients[i].opponent = WAIT;
+                        clients[clients[i].opponent].opponent = WAIT;
+                        printf("The game between %s and %s is over. The winner is %s!", clients[i].names,
+                               clients[clients[i].opponent].names, clients[i].names);
+                    } else { // the updated board has arrived
+                        printf("Received the updated board from %s. Sending it to %s", clients[i].names,
+                               clients[clients[i].opponent].names);
+                        clients[i].myTurn = false;
+                        clients[clients[i].opponent].myTurn = true;
+                        write(clients[clients[i].opponent].fd, response, RESPONSE_MAX_SIZE);
+                        puts("The updated board sent to the other client.");
+                    }
                 }
             }
         }
+        if ((errno = pthread_mutex_unlock(&clientsMutex)) != 0) raisePError("pthread_mutex_unlock");
+
+        if ((errno = pthread_mutex_lock(&clientsMutex)) != 0) raisePError("pthread_mutex_lock");
+        // trying to find a pair
+        for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
+            if (clients[i].names[0] != '\0' && clients[i].opponent == WAIT_SENT) {
+                if (firstPlayer == -1) {
+                    firstPlayer = i;
+                } else {
+                    secondPlayer = i;
+                    break;
+                }
+            }
+        }
+
+        // if found, connect them together
+        if (firstPlayer != -1 && secondPlayer != -1) {
+            // get random beginner
+            int beginner, other;
+            if (rand() % 2 == 0) {
+                beginner = firstPlayer;
+                other = secondPlayer;
+            } else {
+                beginner = secondPlayer;
+                other = firstPlayer;
+            }
+
+            clients[beginner].opponent = other;
+            clients[other].opponent = beginner;
+
+            // send info to clients
+            // using low-case letters because the board will have upper-case ones
+            sprintf(response, "x: you're paired with %s\n", clients[other].names);
+            write(clients[beginner].fd, response, RESPONSE_MAX_SIZE);
+            puts("Informed the first player about their sign.");
+            sprintf(response, "o: you're paired with %s\n", clients[beginner].names);
+            write(clients[other].fd, response, RESPONSE_MAX_SIZE);
+            puts("Informed the second player about their sign.");
+
+            // sending the empty board
+            char board[10] = "";
+            write(clients[beginner].fd, board, 10);
+            puts("Sent an empty board to the first player.");
+
+            clients[beginner].myTurn = true;
+        }
+        firstPlayer = secondPlayer = -1;
+
         if ((errno = pthread_mutex_unlock(&clientsMutex)) != 0) raisePError("pthread_mutex_unlock");
     }
 
@@ -132,6 +195,13 @@ void *pingFunc(void *arg) {
 }
 
 void handleServer(void) {
+    for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
+        clients[i].opponent = WAIT;
+        clients[i].names[0] = '\0';
+    }
+    errno = 0;
+    srand(time(NULL));
+
     pthread_t listenThread, gameThread, pingThread;
 
     pthread_create(&listenThread, NULL, listenFunc, NULL);
@@ -144,6 +214,7 @@ void handleServer(void) {
 }
 
 int main(int argc, char *argv[]) {
+    puts("Server starts working...");
     uint16_t portNum;
     char *socketPath;
     parseArgv(argc, argv, &portNum, &socketPath);

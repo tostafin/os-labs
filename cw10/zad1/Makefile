@@ -2,7 +2,8 @@ CC = gcc
 CFLAGS = -Wall -g
 LIBS = -lpthread
 
-all: compile run_server run_clients clean
+#all: clean compile run_server run_clients
+all: clean compile
 
 compile: common.o
 	$(CC) $(CFLAGS) $< server.c -o server
@@ -18,8 +19,8 @@ run_server:
 
 run_clients:
 	#valgrind ./client client1 network 127.0.0.1:32768
-	gnome-terminal -- ./client client1 network 127.0.0.1:32768
-	gnome-terminal -- ./client client2 network 127.0.0.1:32768
+	gnome-terminal -- ./client client1 local serverSocket
+	gnome-terminal -- ./client client2 local serverSocket
 	#./client client1 network 127.0.0.1:32768
 	#./client client2 network 127.0.0.1:32768
 

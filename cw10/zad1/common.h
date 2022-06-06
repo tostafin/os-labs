@@ -13,8 +13,12 @@
 #include <arpa/inet.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <time.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 #define CLIENT_NAME_MAX_LEN 64
+#define RESPONSE_MAX_SIZE 128
 
 typedef enum connectMode {
     NETWORK,
