@@ -94,6 +94,8 @@ void *listenFunc(void *arg) {
                     strcpy(clients[i].names, clientName);
                     clients[i].fd = clientFd;
                     clients[i].connectMode = connectMode;
+                    clients[i].opponent = WAIT;
+                    clients[i].myTurn = false;
                     break;
                 }
             }
@@ -126,6 +128,8 @@ void *gameFunc(void *arg) {
                         response[0] = 'L';
                         response[1] = '\0';
                         write(clients[clients[i].opponent].fd, response, RESPONSE_MAX_SIZE);
+                        clients[i].names[0] = '\0';
+                        clients[clients[i].opponent].names[0] = '\0';
                         closeConnectionWithClient(clients[i].fd);
                         closeConnectionWithClient(clients[clients[i].opponent].fd);
                     } else if (response[0] == 'D') {
@@ -204,6 +208,27 @@ void *gameFunc(void *arg) {
 }
 
 void *pingFunc(void *arg) {
+    const char ping[] = "ping";
+    char response[RESPONSE_MAX_SIZE];
+    clock_t start;
+    while (true) {
+        if ((errno = pthread_mutex_lock(&clientsMutex)) != 0) raisePError("pthread_mutex_lock");
+        for (int i = 0; i < MAX_NUM_OF_CLIENTS; ++i) {
+            if (clients[i].names[0] != '\0' && clients[i].opponent >= 0) {
+                start = clock();
+                write(clients[i].fd, ping, 5);
+                read(clients[i].fd, response, RESPONSE_MAX_SIZE);
+                if (strcmp(response, "pong") != 0 || ((double) (clock() - start) / (double) CLOCKS_PER_SEC) > 2) {
+                    printf("%s not responding, removing them from the client's list.", clients[i].names);
+                    closeConnectionWithClient(clients[i].fd);
+                    clients[i].names[0] = '\0';
+                }
+            }
+        }
+        if ((errno = pthread_mutex_unlock(&clientsMutex)) != 0) raisePError("pthread_mutex_unlock");
+        sleep(10);
+    }
+
     return NULL;
 }
 

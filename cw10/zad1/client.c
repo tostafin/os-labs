@@ -105,7 +105,7 @@ Result checkWinner(const char *board, int move, char mySign) {
     int y = (move - 1) % 3;
     int n = 3;
 
-    //check col
+    // check col
     for (int i = 0; i < n; i++) {
         if (boardArr[x][i] != mySign)
             break;
@@ -114,7 +114,7 @@ Result checkWinner(const char *board, int move, char mySign) {
         }
     }
 
-    //check row
+    // check row
     for (int i = 0; i < n; i++) {
         if (boardArr[i][y] != mySign)
             break;
@@ -123,9 +123,9 @@ Result checkWinner(const char *board, int move, char mySign) {
         }
     }
 
-    //check diag
+    // check diag
     if (x == y) {
-        //we're on a diagonal
+        // we're on a diagonal
         for (int i = 0; i < n; i++) {
             if (boardArr[i][i] != mySign)
                 break;
@@ -135,7 +135,7 @@ Result checkWinner(const char *board, int move, char mySign) {
         }
     }
 
-    //check anti diag
+    // check anti diag
     if (x + y == n - 1) {
         for (int i = 0; i < n; i++) {
             if (boardArr[i][(n - 1) - i] != mySign)
@@ -146,7 +146,7 @@ Result checkWinner(const char *board, int move, char mySign) {
         }
     }
 
-    //check draw
+    // check draw
     if (movesCnt == 8) {
         return DRAW;
     }
@@ -179,11 +179,15 @@ void handleClients(char *clientName, size_t clientNameLen) {
     bool gameOver = false;
     while (true) {
         read(socketFd, response, RESPONSE_MAX_SIZE);
-        puts("Received a message from the server.");
-        if (response[0] == 'x' || response[0] == 'o') {
+        if (strcmp(response, "ping") == 0) {
+            strcpy(response, "pong");
+            write(socketFd, response, RESPONSE_MAX_SIZE);
+        } else if (response[0] == 'x' || response[0] == 'o') {
+            puts("Received a message from the server.");
             mySign = (char) toupper(response[0]);
             printf("I've been assigned %c\n", mySign);
         } else {
+            puts("Received a message from the server.");
             if (response[0] == 'L') {
                 puts("You lost!");
                 break;
