@@ -119,14 +119,27 @@ void *gameFunc(void *arg) {
                     puts("Received a message from a client.");
                     if (strcmp(response, "received") == 0) {
                         clients[i].opponent = WAIT_SENT;
-                    } else if (strcmp(response, "W") == 0) {
+                    } else if (response[0] == 'W') {
                         // the game is over (w == win)
-                        clients[i].opponent = WAIT;
-                        clients[clients[i].opponent].opponent = WAIT;
-                        printf("The game between %s and %s is over. The winner is %s!", clients[i].names,
+                        printf("The game between %s and %s is over. The winner is %s!\n", clients[i].names,
                                clients[clients[i].opponent].names, clients[i].names);
+                        response[0] = 'L';
+                        response[1] = '\0';
+                        write(clients[clients[i].opponent].fd, response, RESPONSE_MAX_SIZE);
+                        closeConnectionWithClient(clients[i].fd);
+                        closeConnectionWithClient(clients[clients[i].opponent].fd);
+                    } else if (response[0] == 'D') {
+                        printf("The game between %s and %s has been drawn!\n", clients[i].names,
+                               clients[clients[i].opponent].names);
+                        response[0] = 'D';
+                        response[1] = '\0';
+                        write(clients[clients[i].opponent].fd, response, RESPONSE_MAX_SIZE);
+                        clients[i].names[0] = '\0';
+                        clients[clients[i].opponent].names[0] = '\0';
+                        closeConnectionWithClient(clients[i].fd);
+                        closeConnectionWithClient(clients[clients[i].opponent].fd);
                     } else { // the updated board has arrived
-                        printf("Received the updated board from %s. Sending it to %s", clients[i].names,
+                        printf("Received the updated board from %s. Sending it to %s\n", clients[i].names,
                                clients[clients[i].opponent].names);
                         clients[i].myTurn = false;
                         clients[clients[i].opponent].myTurn = true;
